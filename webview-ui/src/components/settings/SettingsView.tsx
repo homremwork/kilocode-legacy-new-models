@@ -1315,6 +1315,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								telemetrySetting={telemetrySetting}
 								setTelemetrySetting={setTelemetrySetting}
 								isVsCode={kiloCodeWrapperProperties?.kiloCodeWrapped !== true /*kilocode_change*/}
+								isPreRelease={extensionState.isPreRelease} // kilocode_change
 							/>
 						)}
 					</SearchIndexProvider>

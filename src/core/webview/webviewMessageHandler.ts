@@ -887,6 +887,16 @@ export const webviewMessageHandler = async (
 		case "resetState":
 			await provider.resetState()
 			break
+		// kilocode_change start: Switch to pre-release channel
+		case "switchToPreRelease":
+			await vscode.commands.executeCommand("workbench.extensions.installExtension", "kilocode.kilo-code", {
+				installPreReleaseVersion: true,
+			})
+			vscode.window.showInformationMessage(
+				"Switching to the pre-release channel. VS Code will prompt you to reload once the update is installed.",
+			)
+			break
+		// kilocode_change end
 		case "flushRouterModels":
 			const routerNameFlush: RouterName = toRouterName(message.text)
 			// Note: flushRouterModels is a generic flush without credentials

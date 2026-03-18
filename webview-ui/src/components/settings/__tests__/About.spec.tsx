@@ -1,11 +1,13 @@
-import { render, screen } from "@/utils/test-utils"
+import { render, screen, fireEvent } from "@/utils/test-utils"
 
 import { TranslationProvider } from "@/i18n/__mocks__/TranslationContext"
 
 import { About } from "../About"
 
+const mockPostMessage = vi.fn()
+
 vi.mock("@/utils/vscode", () => ({
-	vscode: { postMessage: vi.fn() },
+	vscode: { postMessage: (...args: unknown[]) => mockPostMessage(...args) },
 }))
 
 vi.mock("@/i18n/TranslationContext", () => {
@@ -26,11 +28,12 @@ vi.mock("@roo/package", () => ({
 }))
 
 // kilocode_change: our about screen is very different
-describe.skip("About", () => {
+describe.skip("About (upstream tests)", () => {
 	const defaultProps = {
 		telemetrySetting: "enabled" as const,
 		setTelemetrySetting: vi.fn(),
 		isVsCode: true,
+		isPreRelease: false,
 	}
 
 	beforeEach(() => {
@@ -106,3 +109,61 @@ describe.skip("About", () => {
 		expect(screen.getByText("settings:footer.settings.reset")).toBeInTheDocument()
 	})
 })
+
+// kilocode_change start: Pre-release channel tests
+describe("About - Pre-release Channel", () => {
+	const defaultProps = {
+		telemetrySetting: "enabled" as const,
+		setTelemetrySetting: vi.fn(),
+		isVsCode: true,
+		isPreRelease: false,
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("shows 'Switch to Pre-release' button when not on pre-release", () => {
+		render(
+			<TranslationProvider>
+				<About {...defaultProps} isPreRelease={false} />
+			</TranslationProvider>,
+		)
+		expect(screen.getByText("settings:footer.preRelease.switchButton")).toBeInTheDocument()
+		expect(screen.queryByText("settings:footer.preRelease.alreadyOnPreRelease")).not.toBeInTheDocument()
+	})
+
+	it("shows disabled 'You're on Pre-release' button when on pre-release", () => {
+		render(
+			<TranslationProvider>
+				<About {...defaultProps} isPreRelease={true} />
+			</TranslationProvider>,
+		)
+		expect(screen.getByText("settings:footer.preRelease.alreadyOnPreRelease")).toBeInTheDocument()
+		const button = screen.getByText("settings:footer.preRelease.alreadyOnPreRelease").closest("button")
+		expect(button).toBeDisabled()
+		expect(screen.queryByText("settings:footer.preRelease.switchButton")).not.toBeInTheDocument()
+	})
+
+	it("sends switchToPreRelease message when button is clicked", () => {
+		render(
+			<TranslationProvider>
+				<About {...defaultProps} isPreRelease={false} />
+			</TranslationProvider>,
+		)
+		const button = screen.getByText("settings:footer.preRelease.switchButton")
+		fireEvent.click(button)
+		expect(mockPostMessage).toHaveBeenCalledWith({ type: "switchToPreRelease" })
+	})
+
+	it("renders pre-release section title and description", () => {
+		render(
+			<TranslationProvider>
+				<About {...defaultProps} isPreRelease={false} />
+			</TranslationProvider>,
+		)
+		expect(screen.getByText("settings:footer.preRelease.title")).toBeInTheDocument()
+		expect(screen.getByText("settings:footer.preRelease.description")).toBeInTheDocument()
+	})
+})
+// kilocode_change end

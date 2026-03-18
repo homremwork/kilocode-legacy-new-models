@@ -250,6 +250,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [state, setState] = useState<ExtensionState>({
 		apiConfiguration: {},
 		version: "",
+		isPreRelease: false, // kilocode_change
 		clineMessages: [],
 		taskHistoryFullLength: 0, // kilocode_change
 		taskHistoryVersion: 0, // kilocode_change

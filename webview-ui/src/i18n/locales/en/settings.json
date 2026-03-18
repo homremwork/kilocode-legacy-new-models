@@ -1139,6 +1139,12 @@
 			"import": "Import",
 			"export": "Export",
 			"reset": "Reset"
+		},
+		"preRelease": {
+			"title": "Pre-release Channel",
+			"description": "Switch to the pre-release channel to get early access to new features and bug fixes before they are officially released.",
+			"switchButton": "Switch to Pre-release",
+			"alreadyOnPreRelease": "You're on Pre-release"
 		}
 	},
 	"thinkingBudget": {
