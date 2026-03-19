@@ -1103,6 +1103,12 @@
 			"import": "Импорт",
 			"export": "Экспорт",
 			"reset": "Сбросить"
+		},
+		"preRelease": {
+			"title": "Канал Pre-release",
+			"description": "Переключитесь на канал pre-release, чтобы получить ранний доступ к новым функциям и исправлениям ошибок до их официального выпуска.",
+			"switchButton": "Переключиться на Pre-release",
+			"alreadyOnPreRelease": "Вы на Pre-release"
 		}
 	},
 	"thinkingBudget": {

@@ -1101,8 +1101,14 @@
 		},
 		"settings": {
 			"import": "가져오기",
-			"export": "내보내기",
+			"export": "날짜ㅗㅂ내기",
 			"reset": "초기화"
+		},
+		"preRelease": {
+			"title": "프리릴리스 채널",
+			"description": "프리릴리스 채널로 전환하여 공식 릴리스 전에 새 기능과 버그 수정을 미리 이용하세요.",
+			"switchButton": "프리릴리스로 전환",
+			"alreadyOnPreRelease": "프리릴리스 사용 중"
 		}
 	},
 	"thinkingBudget": {

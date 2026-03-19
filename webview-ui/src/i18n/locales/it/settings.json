@@ -1108,6 +1108,12 @@
 			"import": "Importa",
 			"export": "Esporta",
 			"reset": "Ripristina"
+		},
+		"preRelease": {
+			"title": "Canale Pre-release",
+			"description": "Passa al canale pre-release per avere accesso anticipato a nuove funzionalità e correzioni di bug prima che vengano rilasciate ufficialmente.",
+			"switchButton": "Passa a Pre-release",
+			"alreadyOnPreRelease": "Sei in Pre-release"
 		}
 	},
 	"thinkingBudget": {

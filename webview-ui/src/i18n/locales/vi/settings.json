@@ -1103,6 +1103,12 @@
 			"import": "Nhập",
 			"export": "Xuất",
 			"reset": "Đặt lại"
+		},
+		"preRelease": {
+			"title": "Kênh Pre-release",
+			"description": "Chuyển sang kênh pre-release để truy cập sớm các tính năng mới và bản sửa lỗi trước khi chúng được phát hành chính thức.",
+			"switchButton": "Chuyển sang Pre-release",
+			"alreadyOnPreRelease": "Bạn đang ở Pre-release"
 		}
 	},
 	"thinkingBudget": {

@@ -1102,6 +1102,12 @@
 			"import": "Importar",
 			"export": "Exportar",
 			"reset": "Restablecer"
+		},
+		"preRelease": {
+			"title": "Canal de Pre-lanzamiento",
+			"description": "Cambia al canal de pre-lanzamiento para obtener acceso anticipado a nuevas funciones y correcciones de errores antes de que se publiquen oficialmente.",
+			"switchButton": "Cambiar a Pre-lanzamiento",
+			"alreadyOnPreRelease": "Estás en Pre-lanzamiento"
 		}
 	},
 	"thinkingBudget": {

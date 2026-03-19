@@ -2694,6 +2694,7 @@ export class ClineProvider
 
 		// Return the same structure as before.
 		return {
+			isPreRelease: this.isPreRelease,
 			apiConfiguration: providerSettings,
 			kilocodeDefaultModel: (
 				await getKilocodeDefaultModel(providerSettings.kilocodeToken, providerSettings.kilocodeOrganizationId)

@@ -1103,6 +1103,12 @@
 			"import": "İçe Aktar",
 			"export": "Dışa Aktar",
 			"reset": "Sıfırla"
+		},
+		"preRelease": {
+			"title": "Pre-release Kanalı",
+			"description": "Resmi olarak yayınlanmadan önce yeni özelliklere ve hata düzeltmelerine erken erişim sağlamak için pre-release kanalına geçin.",
+			"switchButton": "Pre-release'a Geç",
+			"alreadyOnPreRelease": "Pre-release'dasınız"
 		}
 	},
 	"thinkingBudget": {

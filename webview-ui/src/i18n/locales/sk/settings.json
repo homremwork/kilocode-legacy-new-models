@@ -1208,6 +1208,12 @@
 			"import": "Importovať",
 			"export": "Exportovať",
 			"reset": "Resetovať"
+		},
+		"preRelease": {
+			"title": "Pre-release Kanál",
+			"description": "Prepnite sa na pre-release kanál a získajte predčasný prístup k novým funkciám a opravám chýb pred ich oficiálnym vydaním.",
+			"switchButton": "Prepnúť na Pre-release",
+			"alreadyOnPreRelease": "Ste na Pre-release"
 		}
 	},
 	"thinkingBudget": {

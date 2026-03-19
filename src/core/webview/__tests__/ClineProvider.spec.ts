@@ -560,6 +560,7 @@ describe("ClineProvider", () => {
 
 		const mockState: ExtensionState = {
 			version: "1.0.0",
+			isPreRelease: false,
 			isBrowserSessionActive: false,
 			clineMessages: [],
 			taskHistoryFullLength: 0, // kilocode_change

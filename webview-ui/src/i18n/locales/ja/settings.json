@@ -1108,6 +1108,12 @@
 			"import": "インポート",
 			"export": "エクスポート",
 			"reset": "リセット"
+		},
+		"preRelease": {
+			"title": "プレリリースチャンネル",
+			"description": "プレリリースチャンネルに切り替えると、新機能やバグ修正に正式リリース前に早期アクセスできます。",
+			"switchButton": "プレリリースに切り替え",
+			"alreadyOnPreRelease": "プレリリース中です"
 		}
 	},
 	"thinkingBudget": {

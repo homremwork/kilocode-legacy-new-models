@@ -1124,6 +1124,12 @@
 			"import": "Impor",
 			"export": "Ekspor",
 			"reset": "Reset"
+		},
+		"preRelease": {
+			"title": "Saluran Pre-release",
+			"description": "Beralih ke saluran pre-release untuk mendapatkan akses awal ke fitur baru dan perbaikan bug sebelum dirilis secara resmi.",
+			"switchButton": "Beralih ke Pre-release",
+			"alreadyOnPreRelease": "Anda berada di Pre-release"
 		}
 	},
 	"thinkingBudget": {

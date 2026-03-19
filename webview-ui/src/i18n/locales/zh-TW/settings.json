@@ -1113,6 +1113,12 @@
 			"import": "匯入",
 			"export": "匯出",
 			"reset": "重設"
+		},
+		"preRelease": {
+			"title": "預發布頻道",
+			"description": "切換到預發布頻道，在正式發布之前提前獲得新功能和錯誤修復。",
+			"switchButton": "切換到預發布",
+			"alreadyOnPreRelease": "你正在使用預發布版本"
 		}
 	},
 	"thinkingBudget": {

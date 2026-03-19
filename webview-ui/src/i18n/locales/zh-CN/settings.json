@@ -1107,6 +1107,12 @@
 			"import": "导入",
 			"export": "导出",
 			"reset": "重置"
+		},
+		"preRelease": {
+			"title": "预发布频道",
+			"description": "切换到预发布频道，在正式发布之前提前获得新功能和错误修复。",
+			"switchButton": "切换到预发布",
+			"alreadyOnPreRelease": "你正在使用预发布版本"
 		}
 	},
 	"thinkingBudget": {

@@ -1103,6 +1103,12 @@
 			"import": "Importeren",
 			"export": "Exporteren",
 			"reset": "Resetten"
+		},
+		"preRelease": {
+			"title": "Pre-release Kanaal",
+			"description": "Schakel over naar het pre-release kanaal om vroegtijdig toegang te krijgen tot nieuwe functies en bugfixes voordat ze officieel worden uitgebracht.",
+			"switchButton": "Schakel over naar Pre-release",
+			"alreadyOnPreRelease": "Je bent op Pre-release"
 		}
 	},
 	"thinkingBudget": {

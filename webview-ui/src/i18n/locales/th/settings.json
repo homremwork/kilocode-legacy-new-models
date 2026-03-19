@@ -1210,6 +1210,12 @@
 			"import": "นำเข้า",
 			"export": "ส่งออก",
 			"reset": "รีเซ็ต"
+		},
+		"preRelease": {
+			"title": "ช่อง Pre-release",
+			"description": "สลับไปยังช่อง pre-release เพื่อเข้าถึงฟีเจอร์ใหม่และการแก้ไขบักก่อนที่จะเผยแพร่อย่างเป็นทางการ",
+			"switchButton": "สลับไปยัง Pre-release",
+			"alreadyOnPreRelease": "คุณอยู่บน Pre-release"
 		}
 	},
 	"thinkingBudget": {
