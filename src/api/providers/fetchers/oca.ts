@@ -88,12 +88,17 @@ export async function getOCAModels(
 
 			// kilocode_change start: extract providerName for model search filtering
 			// Prefer explicit provider_name from the API, fall back to the prefix before "/" or "." in the model ID.
-			const providerName: string | undefined =
-				typeof info?.provider_name === "string" && info.provider_name
-					? info.provider_name
-					: typeof modelId === "string"
-						? modelId.split(/[/.]/, 2)[0] || undefined
-						: undefined
+			// Only extract a prefix if there is actually a "/" or "." separator in the model ID.
+			const providerName: string | undefined = (() => {
+				if (typeof info?.provider_name === "string" && info.provider_name) {
+					return info.provider_name
+				}
+				if (typeof modelId === "string") {
+					const sepIdx = modelId.search(/[/.]/)
+					if (sepIdx > 0) return modelId.slice(0, sepIdx)
+				}
+				return undefined
+			})()
 			// kilocode_change end
 
 			const baseInfo: ModelInfo = {

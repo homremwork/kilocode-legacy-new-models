@@ -52,15 +52,14 @@ describe("getOCAModels", () => {
 		expect(models["openai/gpt-4o"]?.providerName).toBe("OpenAI")
 	})
 
-	it("returns undefined providerName when model ID has no separator", async () => {
+	it("returns undefined providerName when model ID has no '/' or '.' separator", async () => {
 		mockHttpClient.get.mockResolvedValue({
 			status: 200,
 			data: { data: [makeModel("gpt-4o")] },
 		})
 
 		const models = await getOCAModels("https://example.com", undefined, mockHttpClient)
-		// "gpt" would be extracted as the first segment before "-" but "-" is not a split char in our logic
-		// (we only split on "/" and ".")
+		// "-" is not a provider separator, only "/" and "." are, so no prefix is extracted
 		expect(models["gpt-4o"]?.providerName).toBeUndefined()
 	})
 })
