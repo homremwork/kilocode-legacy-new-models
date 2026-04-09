@@ -4,7 +4,7 @@ Users report that the ability to click a **+/image icon** to browse and select l
 
 ## Root Cause
 
-In `webview-ui/src/components/chat/ChatTextArea.tsx`, the image select button (and surrounding toolbar section) has been **commented out** with the note `kilocode_change: hidden on small containerWidth`:
+In the [kilocode-legacy](https://github.com/Kilo-Org/kilocode-legacy) repo, the image select button (and surrounding toolbar section) has been **commented out** in [`webview-ui/src/components/chat/ChatTextArea.tsx`](https://github.com/Kilo-Org/kilocode-legacy/blob/15a1be7f97c9b2f19d50dd8077ee42486cfbf5bf/webview-ui/src/components/chat/ChatTextArea.tsx#L1979) with the note `kilocode_change: hidden on small containerWidth`:
 
 ```tsx
 {
@@ -22,7 +22,7 @@ In `webview-ui/src/components/chat/ChatTextArea.tsx`, the image select button (a
 }
 ```
 
-The underlying `onSelectImages` handler is fully functional — it posts a `selectImages` message to the extension host, which calls `vscode.window.showOpenDialog()` (see `src/integrations/misc/process-images.ts`). Only the UI trigger was removed.
+The underlying `onSelectImages` handler is fully functional — it posts a `selectImages` message to the extension host, which calls `vscode.window.showOpenDialog()`. The full backend implementation is in [`src/integrations/misc/process-images.ts`](https://github.com/Kilo-Org/kilocode-legacy/blob/15a1be7f97c9b2f19d50dd8077ee42486cfbf5bf/src/integrations/misc/process-images.ts) in kilocode-legacy. Only the UI button was removed.
 
 ## Expected Behavior (5.x / upstream)
 
