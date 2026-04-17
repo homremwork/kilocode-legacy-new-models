@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Waarschuwing Laag Saldo!",
-		"message": "Kijk of je kunt opwaarderen met gratis tegoeden of meer kunt kopen!"
+		"message": "Je saldo is bijna op. Koop meer tegoed om door te gaan."
 	},
 	"task": {
 		"noAssistantMessages": "Het model reageerde onverwacht (geen assistent berichten). Dit kan een teken zijn van snelheidsbeperking.",

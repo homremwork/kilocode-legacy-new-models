@@ -5,8 +5,7 @@
 	"start": "Bắt đầu thôi!",
 	"routers": {
 		"requesty": {
-			"description": "Bộ định tuyến LLM được tối ưu hóa của bạn",
-			"incentive": "Tín dụng miễn phí $1"
+			"description": "Bộ định tuyến LLM được tối ưu hóa của bạn"
 		},
 		"openrouter": {
 			"description": "Giao diện thống nhất cho LLM"

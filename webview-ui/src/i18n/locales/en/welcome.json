@@ -5,8 +5,7 @@
 	"start": "Let's go!",
 	"routers": {
 		"requesty": {
-			"description": "Your optimized LLM router",
-			"incentive": "$1 free credit"
+			"description": "Your optimized LLM router"
 		},
 		"openrouter": {
 			"description": "A unified interface for LLMs"

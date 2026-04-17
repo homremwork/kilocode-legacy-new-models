@@ -13,7 +13,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Low Credit Warning!",
-		"message": "Check to see if you can top up with free credits or purchase some more!"
+		"message": "Your balance is running low. Purchase more credits to continue."
 	},
 	"task": {
 		"noAssistantMessages": "The model's response ended unexpectedly (no assistant messages). This may be a sign of rate limiting.",

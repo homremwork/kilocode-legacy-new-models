@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Cảnh báo Tín dụng Thấp!",
-		"message": "Hãy kiểm tra xem bạn có thể nạp thêm tín dụng miễn phí hoặc mua thêm không!"
+		"message": "Số dư của bạn sắp hết. Mua thêm tín dụng để tiếp tục."
 	},
 	"task": {
 		"noAssistantMessages": "Phản hồi của mô hình kết thúc bất ngờ (không có tin nhắn trợ lý). Điều này có thể là dấu hiệu của giới hạn tốc độ.",

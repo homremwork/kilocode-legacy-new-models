@@ -13,7 +13,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "餘額不足警告！",
-		"message": "請查看是否有免費額度可儲值，或購買更多額度！"
+		"message": "您的餘額不足。請購買更多額度以繼續使用。"
 	},
 	"task": {
 		"noAssistantMessages": "模型的回應意外結束（沒有助理訊息）。這可能是速率限制的跡象。",

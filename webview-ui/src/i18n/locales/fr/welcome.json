@@ -5,8 +5,7 @@
 	"start": "C'est parti !",
 	"routers": {
 		"requesty": {
-			"description": "Ton routeur LLM optimisé",
-			"incentive": "1$ de crédit gratuit"
+			"description": "Ton routeur LLM optimisé"
 		},
 		"openrouter": {
 			"description": "Une interface unifiée pour les LLMs"

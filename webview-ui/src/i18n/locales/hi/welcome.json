@@ -5,8 +5,7 @@
 	"start": "चलो शुरू करें!",
 	"routers": {
 		"requesty": {
-			"description": "आपका अनुकूलित LLM राउटर",
-			"incentive": "$1 मुफ्त क्रेडिट"
+			"description": "आपका अनुकूलित LLM राउटर"
 		},
 		"openrouter": {
 			"description": "LLM के लिए एक एकीकृत इंटरफेस"

@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Alerte de Crédit Faible !",
-		"message": "Vérifiez si vous pouvez ajouter des crédits gratuits ou en acheter davantage !"
+		"message": "Votre solde est faible. Achetez plus de crédits pour continuer."
 	},
 	"task": {
 		"noAssistantMessages": "La réponse du modèle s'est terminée de manière inattendue (aucun message d'assistant). Cela peut être un signe de limitation du taux de requêtes.",

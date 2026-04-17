@@ -5,8 +5,7 @@
 	"start": "يلا نبدأ!",
 	"routers": {
 		"requesty": {
-			"description": "موجّه LLM الأمثل لك",
-			"incentive": "$1 رصيد مجاني"
+			"description": "موجّه LLM الأمثل لك"
 		},
 		"openrouter": {
 			"description": "واجهة موحّدة لنماذج LLM"

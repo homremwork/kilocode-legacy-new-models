@@ -5,8 +5,7 @@
 	"start": "Los geht's!",
 	"routers": {
 		"requesty": {
-			"description": "Dein optimierter LLM-Router",
-			"incentive": "$1 Guthaben gratis"
+			"description": "Dein optimierter LLM-Router"
 		},
 		"openrouter": {
 			"description": "Eine einheitliche Schnittstelle für LLMs"

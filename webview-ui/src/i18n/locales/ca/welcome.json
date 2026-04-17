@@ -5,8 +5,7 @@
 	"start": "Som-hi!",
 	"routers": {
 		"requesty": {
-			"description": "El teu encaminador LLM optimitzat",
-			"incentive": "Crèdit gratuït de $1"
+			"description": "El teu encaminador LLM optimitzat"
 		},
 		"openrouter": {
 			"description": "Una interfície unificada per als LLM"

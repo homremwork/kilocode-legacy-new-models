@@ -5,8 +5,7 @@
 	"start": "Поїхали!",
 	"routers": {
 		"requesty": {
-			"description": "Твій оптимізований LLM роутер",
-			"incentive": "$1 безкоштовний кредит"
+			"description": "Твій оптимізований LLM роутер"
 		},
 		"openrouter": {
 			"description": "Уніфікований інтерфейс для LLM"

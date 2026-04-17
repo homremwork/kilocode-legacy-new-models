@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Avviso Credito Basso!",
-		"message": "Controlla se puoi ricaricare con crediti gratuiti o acquistarne altri!"
+		"message": "Il tuo saldo sta per esaurirsi. Acquista più crediti per continuare."
 	},
 	"task": {
 		"noAssistantMessages": "La risposta del modello è terminata inaspettatamente (nessun messaggio dell'assistente). Questo potrebbe essere un segno di limitazione del tasso di richieste.",

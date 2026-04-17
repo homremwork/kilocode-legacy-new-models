@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "余额不足警告！",
-		"message": "请检查是否可以充值免费额度或购买更多额度！"
+		"message": "您的余额不足。请购买更多额度以继续使用。"
 	},
 	"task": {
 		"noAssistantMessages": "模型响应意外结束（没有助理消息）。这可能是 API 请求频率限制的迹象。",

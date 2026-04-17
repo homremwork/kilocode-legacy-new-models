@@ -5,8 +5,7 @@
 	"start": "さあ、始めましょう！",
 	"routers": {
 		"requesty": {
-			"description": "最適化されたLLMルーター",
-			"incentive": "無料の$1クレジット"
+			"description": "最適化されたLLMルーター"
 		},
 		"openrouter": {
 			"description": "LLM向けの統一インターフェース"

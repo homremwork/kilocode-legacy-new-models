@@ -12,8 +12,7 @@
 	"start": "ไปกันเลย!",
 	"routers": {
 		"requesty": {
-			"description": "LLM router ที่ปรับแต่งมาเพื่อคุณ",
-			"incentive": "เครดิตฟรี $1"
+			"description": "LLM router ที่ปรับแต่งมาเพื่อคุณ"
 		},
 		"openrouter": {
 			"description": "อินเทอร์เฟซรวมสำหรับ LLMs"

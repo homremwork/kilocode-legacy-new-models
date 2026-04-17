@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Aviso de Crédito Baixo!",
-		"message": "Verifique se você pode recarregar com créditos gratuitos ou comprar mais!"
+		"message": "Seu saldo está baixo. Compre mais créditos para continuar."
 	},
 	"task": {
 		"noAssistantMessages": "A resposta do modelo terminou inesperadamente (nenhuma mensagem do assistente). Isso pode ser um sinal de limitação de taxa.",

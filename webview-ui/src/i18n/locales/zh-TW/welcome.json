@@ -5,8 +5,7 @@
 	"start": "讓我們開始吧！",
 	"routers": {
 		"requesty": {
-			"description": "為您最佳化的 LLM 路由器",
-			"incentive": "$1 免費額度"
+			"description": "為您最佳化的 LLM 路由器"
 		},
 		"openrouter": {
 			"description": "LLM 統一介面"

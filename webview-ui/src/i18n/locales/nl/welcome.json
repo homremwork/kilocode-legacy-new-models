@@ -5,8 +5,7 @@
 	"start": "Aan de slag!",
 	"routers": {
 		"requesty": {
-			"description": "Je geoptimaliseerde LLM-router",
-			"incentive": "1 dollar gratis tegoed"
+			"description": "Je geoptimaliseerde LLM-router"
 		},
 		"openrouter": {
 			"description": "Een geïntegreerde interface voor LLM's"

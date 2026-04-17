@@ -5,8 +5,7 @@
 	"start": "Ayo mulai!",
 	"routers": {
 		"requesty": {
-			"description": "Router LLM yang dioptimalkan",
-			"incentive": "Kredit gratis $1"
+			"description": "Router LLM yang dioptimalkan"
 		},
 		"openrouter": {
 			"description": "Antarmuka terpadu untuk LLM"

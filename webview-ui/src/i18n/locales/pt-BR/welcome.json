@@ -5,8 +5,7 @@
 	"start": "Vamos lá!",
 	"routers": {
 		"requesty": {
-			"description": "Seu roteador LLM otimizado",
-			"incentive": "Crédito grátis de $1"
+			"description": "Seu roteador LLM otimizado"
 		},
 		"openrouter": {
 			"description": "Uma interface unificada para LLMs"

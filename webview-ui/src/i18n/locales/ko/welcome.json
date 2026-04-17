@@ -5,8 +5,7 @@
 	"start": "시작해 봅시다!",
 	"routers": {
 		"requesty": {
-			"description": "최적화된 LLM 라우터",
-			"incentive": "무료 $1 크레딧"
+			"description": "최적화된 LLM 라우터"
 		},
 		"openrouter": {
 			"description": "LLM을 위한 통합 인터페이스"

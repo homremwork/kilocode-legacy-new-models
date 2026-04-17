@@ -5,8 +5,7 @@
 	"start": "Poďme na to!",
 	"routers": {
 		"requesty": {
-			"description": "Tvoj optimalizovaný LLM router",
-			"incentive": "$1 kredit zadarmo"
+			"description": "Tvoj optimalizovaný LLM router"
 		},
 		"openrouter": {
 			"description": "Jednotné rozhranie pre LLM"

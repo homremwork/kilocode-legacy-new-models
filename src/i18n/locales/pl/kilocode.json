@@ -9,7 +9,7 @@
 	},
 	"lowCreditWarning": {
 		"title": "Ostrzeżenie o niskim saldzie!",
-		"message": "Sprawdź, czy możesz doładować darmowymi środkami lub kupić więcej!"
+		"message": "Twoje saldo jest niskie. Kup więcej kredytów, aby kontynuować."
 	},
 	"task": {
 		"noAssistantMessages": "Odpowiedź modelu zakończyła się nieoczekiwanie (brak komunikatów asystenta). To może być oznaka ograniczenia częstotliwości żądań.",

@@ -5,8 +5,7 @@
 	"start": "Hadi başlayalım!",
 	"routers": {
 		"requesty": {
-			"description": "Optimize edilmiş LLM yönlendiriciniz",
-			"incentive": "$1 ücretsiz kredi"
+			"description": "Optimize edilmiş LLM yönlendiriciniz"
 		},
 		"openrouter": {
 			"description": "LLM'ler için birleşik bir arayüz"
