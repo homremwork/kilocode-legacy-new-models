@@ -36,6 +36,8 @@ import {
 	ChevronDown,
 	Check,
 	X,
+	FolderOpen,
+	RefreshCw,
 } from "lucide-react"
 import { cn } from "../../../lib/utils"
 
@@ -414,63 +416,92 @@ function MessageItem({
 
 	// --- ASK ---
 	if (message.type === "ask") {
-		switch (message.ask) {
-			case "followup": {
-				icon = <MessageCircleQuestion size={16} />
-				title = t("messages.question")
-				const followUpData = extractFollowUpData(message)
-				suggestions = followUpData?.suggestions
-				content = (
-					<div>
-						<SimpleMarkdown content={followUpData?.question || messageText} />
-					</div>
-				)
-				break
+		// Handle permission asks that use non-standard ask types sent by the CLI
+		const askRaw = message.ask as string
+		if (askRaw === "doom_loop") {
+			// Triggered when the agent is repeating the same tool call in a loop
+			const doomMetadata = message.metadata as { tool?: string } | undefined
+			const toolName = doomMetadata?.tool
+			icon = <RefreshCw size={16} className="text-yellow-500" />
+			title = toolName ? t("messages.doomLoop", { toolName }) : t("messages.doomLoopGeneric")
+			// Show message text only if it's not just the raw "doom_loop" identifier
+			const doomContent = messageText && messageText !== "doom_loop" ? messageText : undefined
+			if (doomContent) {
+				content = <SimpleMarkdown content={doomContent} />
 			}
-			case "command": {
-				icon = <TerminalSquare size={16} />
-				title = t("messages.command")
-				const execInfo = commandExecutionByTs.get(message.ts)
-				content = (
-					<CommandExecutionBlock
-						text={messageText}
-						isRunning={execInfo?.isRunning ?? message.partial}
-						isLast={isLast}
-						exitCode={execInfo?.exitCode}
-						terminalStatus={execInfo?.status}
-					/>
-				)
-				break
+		} else if (askRaw === "external_directory") {
+			// Triggered when the agent wants to access a directory outside the workspace
+			icon = <FolderOpen size={16} />
+			title = t("messages.externalDirectory")
+			// Show message text only if it's not just the raw "external_directory" identifier
+			const extDirContent =
+				messageText && messageText !== "external_directory" ? messageText : undefined
+			if (extDirContent) {
+				content = <SimpleMarkdown content={extDirContent} />
 			}
-			case "command_output": {
-				// Skip standalone command_output - combined with command message
-				return null
-			}
-			case "tool": {
-				// Tool info can be in metadata (from CLI) or parsed from text
-				const metadata = message.metadata as { tool?: string; path?: string; todos?: unknown[] } | undefined
-				const toolInfo = metadata?.tool ? metadata : safeJsonParse<{ tool: string; path?: string }>(messageText)
-				// Skip updateTodoList - it's displayed in the header via TodoListDisplay
-				if (toolInfo?.tool === "updateTodoList") {
-					return null
-				}
-				icon = <TerminalSquare size={16} />
-				title = t("messages.tool")
-				// Try to parse tool use for better display
-				if (toolInfo) {
-					const toolDetails = toolInfo.path ? `(${toolInfo.path})` : ""
+		} else {
+			switch (message.ask) {
+				case "followup": {
+					icon = <MessageCircleQuestion size={16} />
+					title = t("messages.question")
+					const followUpData = extractFollowUpData(message)
+					suggestions = followUpData?.suggestions
 					content = (
-						<SimpleMarkdown
-							content={t("messages.usingTool", { tool: toolInfo.tool, details: toolDetails })}
+						<div>
+							<SimpleMarkdown content={followUpData?.question || messageText} />
+						</div>
+					)
+					break
+				}
+				case "command": {
+					icon = <TerminalSquare size={16} />
+					title = t("messages.command")
+					const execInfo = commandExecutionByTs.get(message.ts)
+					content = (
+						<CommandExecutionBlock
+							text={messageText}
+							isRunning={execInfo?.isRunning ?? message.partial}
+							isLast={isLast}
+							exitCode={execInfo?.exitCode}
+							terminalStatus={execInfo?.status}
 						/>
 					)
-				} else {
-					content = <SimpleMarkdown content={messageText} />
+					break
 				}
-				break
+				case "command_output": {
+					// Skip standalone command_output - combined with command message
+					return null
+				}
+				case "tool": {
+					// Tool info can be in metadata (from CLI) or parsed from text
+					const metadata = message.metadata as
+						| { tool?: string; path?: string; todos?: unknown[] }
+						| undefined
+					const toolInfo = metadata?.tool
+						? metadata
+						: safeJsonParse<{ tool: string; path?: string }>(messageText)
+					// Skip updateTodoList - it's displayed in the header via TodoListDisplay
+					if (toolInfo?.tool === "updateTodoList") {
+						return null
+					}
+					icon = <TerminalSquare size={16} />
+					title = t("messages.tool")
+					// Try to parse tool use for better display
+					if (toolInfo) {
+						const toolDetails = toolInfo.path ? `(${toolInfo.path})` : ""
+						content = (
+							<SimpleMarkdown
+								content={t("messages.usingTool", { tool: toolInfo.tool, details: toolDetails })}
+							/>
+						)
+					} else {
+						content = <SimpleMarkdown content={messageText} />
+					}
+					break
+				}
+				default:
+					content = <SimpleMarkdown content={messageText} />
 			}
-			default:
-				content = <SimpleMarkdown content={messageText} />
 		}
 	}
 

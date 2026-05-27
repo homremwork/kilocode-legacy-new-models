@@ -89,7 +89,10 @@
 		"thinking": "Thinking",
 		"thinkingSeconds": "{{count}}s",
 		"approve": "Approve",
-		"deny": "Deny"
+		"deny": "Deny",
+		"externalDirectory": "External Directory",
+		"doomLoop": "Prevent constant loop on {{toolName}}",
+		"doomLoopGeneric": "Prevent constant loop"
 	},
 	"chatInput": {
 		"autoMode": "Agent running in full-auto mode - no input allowed",
