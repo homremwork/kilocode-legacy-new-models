@@ -96,7 +96,7 @@ jobs:
 
                   echo "Extracting changelog for version ${current_package_version}"
                   # Match version headers: ## [vX.X.X], ## [X.X.X], ## X.X.X (brackets and v are optional)
-                  changelog_content=$(sed -E -n "/^## \\ [?v?${current_package_version}\\]?/,/^## /p" CHANGELOG.md | sed '$d')
+                  changelog_content=$(sed -E -n "/^## \\[?v?${current_package_version}\\]?/,/^## /p" CHANGELOG.md | sed '$d')
 
                   if [ -z "$changelog_content" ]; then
                     echo "Error: No changelog section found for version ${current_package_version}"
