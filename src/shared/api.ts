@@ -5,6 +5,7 @@ import {
 	type ProviderSettings,
 	type DynamicProvider,
 	type LocalProvider,
+	type ReasoningEffortExtended,
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 	isDynamicProvider,
 	isLocalProvider,
@@ -69,13 +70,9 @@ export const shouldUseReasoningEffort = ({
 	if (settings?.enableReasoningEffort === false) return false
 
 	// Selected effort from settings or model default
-	const selectedEffort = (settings?.reasoningEffort ?? (model as any).reasoningEffort) as
+	const selectedEffort = (settings?.reasoningEffort ?? model.reasoningEffort) as
+		| ReasoningEffortExtended
 		| "disable"
-		| "none"
-		| "minimal"
-		| "low"
-		| "medium"
-		| "high"
 		| undefined
 
 	// "disable" explicitly omits reasoning
@@ -85,7 +82,7 @@ export const shouldUseReasoningEffort = ({
 
 	// Capability array: use only if selected is included (treat "none"/"minimal" as valid)
 	if (Array.isArray(cap)) {
-		return !!selectedEffort && (cap as ReadonlyArray<string>).includes(selectedEffort as string)
+		return !!selectedEffort && (cap as ReadonlyArray<string>).includes(selectedEffort)
 	}
 
 	// Boolean capability: true → require a selected effort
@@ -95,13 +92,7 @@ export const shouldUseReasoningEffort = ({
 
 	// Not explicitly supported: only allow when the model itself defines a default effort
 	// Ignore settings-only selections when capability is absent/false
-	const modelDefaultEffort = (model as any).reasoningEffort as
-		| "none"
-		| "minimal"
-		| "low"
-		| "medium"
-		| "high"
-		| undefined
+	const modelDefaultEffort = model.reasoningEffort as ReasoningEffortExtended | undefined
 	return !!modelDefaultEffort
 }
 
