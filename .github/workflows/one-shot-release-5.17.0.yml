@@ -20,4 +20,48 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Bump version
+      - name: Bump version and changelogs
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_path = Path('src/package.json')
+          package = json.loads(package_path.read_text())
+          if package['version'] != '5.16.2':
+              raise SystemExit(f"Expected 5.16.2, found {package['version']}")
+          package['version'] = '5.17.0'
+          package_path.write_text(json.dumps(package, indent='\t', ensure_ascii=False) + '\n')
+
+          heading = '''## 5.17.0
+
+### Added
+
+- Added GPT-5.6 Sol, Terra, and Luna models to the OpenAI Codex provider.
+- Added `max` and `ultra` reasoning effort options for supported GPT-5.6 models.
+
+### Fixed
+
+- Increased usable OpenAI Codex context to the full 90% context-management budget instead of reserving the model's entire maximum output capability.
+
+'''
+          for filename in ('CHANGELOG.md', 'src/CHANGELOG.md'):
+              path = Path(filename)
+              text = path.read_text()
+              if '## 5.17.0' not in text:
+                  path.write_text(heading + text)
+          PY
+
+      - name: Commit release metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/one-shot-release-5.17.0.yml
+          git add src/package.json CHANGELOG.md src/CHANGELOG.md .github/workflows/one-shot-release-5.17.0.yml
+          git commit -m "chore: release 5.17.0"
+          git push origin main
+
+      - name: Trigger Publish Extension
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run marketplace-publish.yml --ref main
