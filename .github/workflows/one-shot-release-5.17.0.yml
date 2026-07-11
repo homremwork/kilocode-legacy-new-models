@@ -1,0 +1,23 @@
+name: One-shot release 5.17.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-shot-release-5.17.0.yml
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Bump version
