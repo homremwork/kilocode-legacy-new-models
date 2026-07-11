@@ -2,7 +2,8 @@ name: One-shot release 5.17.0
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - .github/workflows/one-shot-release-5.17.0.yml
 
@@ -21,36 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Bump version and changelogs
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          package_path = Path('src/package.json')
-          package = json.loads(package_path.read_text())
-          if package['version'] != '5.16.2':
-              raise SystemExit(f"Expected 5.16.2, found {package['version']}")
-          package['version'] = '5.17.0'
-          package_path.write_text(json.dumps(package, indent='\t', ensure_ascii=False) + '\n')
-
-          heading = '''## 5.17.0
-
-### Added
-
-- Added GPT-5.6 Sol, Terra, and Luna models to the OpenAI Codex provider.
-- Added `max` and `ultra` reasoning effort options for supported GPT-5.6 models.
-
-### Fixed
-
-- Increased usable OpenAI Codex context to the full 90% context-management budget instead of reserving the model's entire maximum output capability.
-
-'''
-          for filename in ('CHANGELOG.md', 'src/CHANGELOG.md'):
-              path = Path(filename)
-              text = path.read_text()
-              if '## 5.17.0' not in text:
-                  path.write_text(heading + text)
-          PY
+        run: python3 -c "import base64; exec(base64.b64decode('aW1wb3J0IGpzb24KZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpwYWNrYWdlX3BhdGggPSBQYXRoKCJzcmMvcGFja2FnZS5qc29uIikKcGFja2FnZSA9IGpzb24ubG9hZHMocGFja2FnZV9wYXRoLnJlYWRfdGV4dCgpKQppZiBwYWNrYWdlWyJ2ZXJzaW9uIl0gIT0gIjUuMTYuMiI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYnRXhwZWN0ZWQgNS4xNi4yLCBmb3VuZCB7cGFja2FnZVsidmVyc2lvbiJdfScpCnBhY2thZ2VbInZlcnNpb24iXSA9ICI1LjE3LjAiCnBhY2thZ2VfcGF0aC53cml0ZV90ZXh0KGpzb24uZHVtcHMocGFja2FnZSwgaW5kZW50PSJcdCIsIGVuc3VyZV9hc2NpaT1GYWxzZSkgKyAiXG4iKQoKaGVhZGluZyA9ICgKICAgICIjIyA1LjE3LjBcblxuIgogICAgIiMjIyBBZGRlZFxuXG4iCiAgICAiLSBBZGRlZCBHUFQtNS42IFNvbCwgVGVycmEsIGFuZCBMdW5hIG1vZGVscyB0byB0aGUgT3BlbkFJIENvZGV4IHByb3ZpZGVyLlxuIgogICAgIi0gQWRkZWQgYG1heGAgYW5kIGB1bHRyYWAgcmVhc29uaW5nIGVmZm9ydCBvcHRpb25zIGZvciBzdXBwb3J0ZWQgR1BULTUuNiBtb2RlbHMuXG5cbiIKICAgICIjIyMgRml4ZWRcblxuIgogICAgIi0gSW5jcmVhc2VkIHVzYWJsZSBPcGVuQUkgQ29kZXggY29udGV4dCB0byB0aGUgZnVsbCA5MCUgY29udGV4dC1tYW5hZ2VtZW50IGJ1ZGdldCBpbnN0ZWFkIG9mIHJlc2VydmluZyB0aGUgbW9kZWwncyBlbnRpcmUgbWF4aW11bSBvdXRwdXQgY2FwYWJpbGl0eS5cblxuIgopCmZvciBmaWxlbmFtZSBpbiAoIkNIQU5HRUxPRy5tZCIsICJzcmMvQ0hBTkdFTE9HLm1kIik6CiAgICBwYXRoID0gUGF0aChmaWxlbmFtZSkKICAgIHRleHQgPSBwYXRoLnJlYWRfdGV4dCgpCiAgICBpZiAiIyMgNS4xNy4wIiBub3QgaW4gdGV4dDoKICAgICAgICBwYXRoLndyaXRlX3RleHQoaGVhZGluZyArIHRleHQpCg=='))"
 
       - name: Commit release metadata
         run: |
