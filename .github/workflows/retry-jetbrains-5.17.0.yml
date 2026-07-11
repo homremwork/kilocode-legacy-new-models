@@ -1,0 +1,43 @@
+name: Retry JetBrains 5.17.0
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/retry-jetbrains-5.17.0.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          submodules: recursive
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.20.0
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          distribution: jetbrains
+          java-version: '21'
+          check-latest: false
+      - uses: gradle/actions/setup-gradle@v5
+      - run: sudo apt-get update && sudo apt-get install -y libx11-dev libxkbfile-dev pkg-config build-essential python3
+      - run: pnpm install
+      - run: echo "KILOCODE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
+      - run: pnpm run jetbrains:bundle
+      - run: echo "BUNDLE_NAME=$(node jetbrains/plugin/scripts/get_bundle_name.js)" >> $GITHUB_ENV
+      - name: Attach and publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v5.17.0 "jetbrains/plugin/build/distributions/${{ env.BUNDLE_NAME }}#JetBrains Plugin" --clobber
+          curl -X POST -H "Authorization: Bearer ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}" -F "file=@jetbrains/plugin/build/distributions/${{ env.BUNDLE_NAME }}" -F "pluginId=28350" -F "channel=stable" -F "isHidden=false" https://plugins.jetbrains.com/plugin/uploadPlugin
