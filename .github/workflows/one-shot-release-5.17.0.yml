@@ -21,15 +21,34 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Bump version and changelogs
-        run: python3 -c "import base64; exec(base64.b64decode('aW1wb3J0IGpzb24KZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpwYWNrYWdlX3BhdGggPSBQYXRoKCJzcmMvcGFja2FnZS5qc29uIikKcGFja2FnZSA9IGpzb24ubG9hZHMocGFja2FnZV9wYXRoLnJlYWRfdGV4dCgpKQppZiBwYWNrYWdlWyJ2ZXJzaW9uIl0gIT0gIjUuMTYuMiI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYnRXhwZWN0ZWQgNS4xNi4yLCBmb3VuZCB7cGFja2FnZVsidmVyc2lvbiJdfScpCnBhY2thZ2VbInZlcnNpb24iXSA9ICI1LjE3LjAiCnBhY2thZ2VfcGF0aC53cml0ZV90ZXh0KGpzb24uZHVtcHMocGFja2FnZSwgaW5kZW50PSJcdCIsIGVuc3VyZV9hc2NpaT1GYWxzZSkgKyAiXG4iKQoKaGVhZGluZyA9ICgKICAgICIjIyA1LjE3LjBcblxuIgogICAgIiMjIyBBZGRlZFxuXG4iCiAgICAiLSBBZGRlZCBHUFQtNS42IFNvbCwgVGVycmEsIGFuZCBMdW5hIG1vZGVscyB0byB0aGUgT3BlbkFJIENvZGV4IHByb3ZpZGVyLlxuIgogICAgIi0gQWRkZWQgYG1heGAgYW5kIGB1bHRyYWAgcmVhc29uaW5nIGVmZm9ydCBvcHRpb25zIGZvciBzdXBwb3J0ZWQgR1BULTUuNiBtb2RlbHMuXG5cbiIKICAgICIjIyMgRml4ZWRcblxuIgogICAgIi0gSW5jcmVhc2VkIHVzYWJsZSBPcGVuQUkgQ29kZXggY29udGV4dCB0byB0aGUgZnVsbCA5MCUgY29udGV4dC1tYW5hZ2VtZW50IGJ1ZGdldCBpbnN0ZWFkIG9mIHJlc2VydmluZyB0aGUgbW9kZWwncyBlbnRpcmUgbWF4aW11bSBvdXRwdXQgY2FwYWJpbGl0eS5cblxuIgopCgpyb290X2NoYW5nZWxvZyA9IFBhdGgoIkNIQU5HRUxPRy5tZCIpCnRleHQgPSByb290X2NoYW5nZWxvZy5yZWFkX3RleHQoKQppZiAiIyMgNS4xNy4wIiBub3QgaW4gdGV4dDoKICAgIHRleHQgPSBoZWFkaW5nICsgdGV4dAogICAgcm9vdF9jaGFuZ2Vsb2cud3JpdGVfdGV4dCh0ZXh0KQoKUGF0aCgic3JjL0NIQU5HRUxPRy5tZCIpLndyaXRlX3RleHQocm9vdF9jaGFuZ2Vsb2cucmVhZF90ZXh0KCkpCg=='))"
+      - name: Bump version
+        run: |
+          node -e "const fs=require('fs'); const p='src/package.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); if(j.version!=='5.16.2') throw new Error('Expected 5.16.2, found '+j.version); j.version='5.17.0'; fs.writeFileSync(p, JSON.stringify(j,null,'\t')+'\n');"
+
+      - name: Update changelog
+        run: |
+          if ! grep -q '^## 5\.17\.0$' CHANGELOG.md; then
+            printf '%s\n' \
+              '## 5.17.0' \
+              '' \
+              '### Added' \
+              '' \
+              '- Added GPT-5.6 Sol, Terra, and Luna models to the OpenAI Codex provider.' \
+              '- Added `max` and `ultra` reasoning effort options for supported GPT-5.6 models.' \
+              '' \
+              '### Fixed' \
+              '' \
+              "- Increased usable OpenAI Codex context to the full 90% context-management budget instead of reserving the model's entire maximum output capability." \
+              '' | cat - CHANGELOG.md > CHANGELOG.md.new
+            mv CHANGELOG.md.new CHANGELOG.md
+          fi
 
       - name: Commit release metadata
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           rm .github/workflows/one-shot-release-5.17.0.yml
-          git add src/package.json CHANGELOG.md src/CHANGELOG.md .github/workflows/one-shot-release-5.17.0.yml
+          git add src/package.json CHANGELOG.md .github/workflows/one-shot-release-5.17.0.yml
           git commit -m "chore: release 5.17.0"
           git push origin main
 
