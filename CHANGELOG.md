@@ -1,3 +1,14 @@
+## 5.17.0
+
+### Added
+
+- Added GPT-5.6 Sol, Terra, and Luna models to the OpenAI Codex provider.
+- Added `max` and `ultra` reasoning effort options for supported GPT-5.6 models.
+
+### Fixed
+
+- Increased usable OpenAI Codex context to the full 90% context-management budget instead of reserving the model's entire maximum output capability.
+
 # kilo-code
 
 ## 5.16.2
