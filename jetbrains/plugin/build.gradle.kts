@@ -96,6 +96,8 @@ dependencies {
     intellijPlatform {
         create(properties("platformType"), properties("platformVersion"))
 
+        bundledPlugin("intellij.platform.ui.jcef")
+
         // Bundled plugins
         bundledPlugins(
             listOf(
