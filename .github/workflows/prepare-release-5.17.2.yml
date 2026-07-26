@@ -55,3 +55,5 @@ jobs:
           git add -A
           git commit -m "fix(jetbrains): finalize CLion 2026.2 JCEF support"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+# one-shot trigger
