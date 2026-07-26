@@ -2,19 +2,21 @@ name: Prepare release 5.17.2
 
 on:
   pull_request:
+    types: [closed]
     branches: [main]
-    paths: [.github/workflows/prepare-release-5.17.2.yml]
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   prepare:
+    if: github.event.pull_request.number == 4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: main
           fetch-depth: 0
       - name: Apply final JCEF compatibility patch
         run: |
@@ -45,13 +47,16 @@ jobs:
           gradle = gradle.replace('\n        bundledPlugin("intellij.platform.ui.jcef")\n', '\n')
           gradle_path.write_text(gradle)
 
-          workflow = Path('.github/workflows/prepare-release-5.17.2.yml')
-          workflow.unlink()
+          Path('.github/workflows/prepare-release-5.17.2.yml').unlink()
           PY
-      - name: Commit prepared release
+      - name: Commit release source
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "fix(jetbrains): finalize CLion 2026.2 JCEF support"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin main
+      - name: Trigger publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run marketplace-publish.yml --ref main
