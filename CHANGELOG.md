@@ -1,3 +1,9 @@
+## 5.17.1
+
+### Fixed
+
+- Restored JCEF WebView support in CLion 2026.2 by declaring the separated JCEF platform module.
+
 ## 5.17.0
 
 ### Added
