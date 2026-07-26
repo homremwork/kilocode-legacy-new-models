@@ -1,0 +1,57 @@
+name: Prepare release 5.17.2
+
+on:
+  pull_request:
+    branches: [main]
+    paths: [.github/workflows/prepare-release-5.17.2.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Apply final JCEF compatibility patch
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import json
+
+          package_path = Path('src/package.json')
+          package = json.loads(package_path.read_text())
+          package['version'] = '5.17.2'
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent='\t') + '\n')
+
+          changelog_path = Path('CHANGELOG.md')
+          changelog = changelog_path.read_text()
+          entry = '''## 5.17.2
+
+### Fixed
+
+- Restored JCEF WebView support in CLion 2026.2 while keeping the JetBrains plugin build compatible with IntelliJ Platform 2025.3.1.
+
+'''
+          if not changelog.startswith('## 5.17.2\n'):
+              changelog_path.write_text(entry + changelog)
+
+          gradle_path = Path('jetbrains/plugin/build.gradle.kts')
+          gradle = gradle_path.read_text()
+          gradle = gradle.replace('\n        bundledModule("intellij.platform.ui.jcef")\n', '\n')
+          gradle = gradle.replace('\n        bundledPlugin("intellij.platform.ui.jcef")\n', '\n')
+          gradle_path.write_text(gradle)
+
+          workflow = Path('.github/workflows/prepare-release-5.17.2.yml')
+          workflow.unlink()
+          PY
+      - name: Commit prepared release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(jetbrains): finalize CLion 2026.2 JCEF support"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
