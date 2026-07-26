@@ -1,0 +1,123 @@
+name: One-shot release 5.17.1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/one-shot-release-5.17.1.yml
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply CLion 2026.2 compatibility patch
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import json
+
+          version = "5.17.1"
+
+          package_path = Path("src/package.json")
+          package = json.loads(package_path.read_text())
+          if package.get("version") != "5.17.0":
+              raise RuntimeError(f"Expected src/package.json version 5.17.0, found {package.get('version')}")
+          package["version"] = version
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent="\t") + "\n")
+
+          changelog_path = Path("CHANGELOG.md")
+          changelog = changelog_path.read_text()
+          if "## 5.17.1\n" in changelog:
+              raise RuntimeError("CHANGELOG.md already contains 5.17.1")
+          changelog_entry = """## 5.17.1
+
+          ### Fixed
+
+          - Added explicit JCEF dependencies and updated the JetBrains build target for CLion 2026.2 compatibility.
+
+          """
+          changelog_path.write_text(changelog_entry + changelog)
+
+          plugin_xml_path = Path("jetbrains/plugin/src/main/resources/META-INF/plugin.xml.template")
+          plugin_xml = plugin_xml_path.read_text()
+          jcef_dependency = "    <depends>com.intellij.modules.jcef</depends>\n"
+          if jcef_dependency not in plugin_xml:
+              platform_dependency = "    <depends>com.intellij.modules.platform</depends>\n"
+              if platform_dependency not in plugin_xml:
+                  raise RuntimeError("Platform dependency insertion point not found in plugin.xml.template")
+              plugin_xml = plugin_xml.replace(platform_dependency, platform_dependency + jcef_dependency, 1)
+          plugin_xml_path.write_text(plugin_xml)
+
+          gradle_path = Path("jetbrains/plugin/build.gradle.kts")
+          gradle = gradle_path.read_text()
+          replacements = [
+              (
+                  'id("org.jetbrains.intellij.platform") version "2.10.0"',
+                  'id("org.jetbrains.intellij.platform") version "2.18.0"',
+              ),
+              (
+                  "// Configure Java toolchain to force Java 21",
+                  "// Use the Java 25 toolchain required by IntelliJ Platform 2026.2 while emitting Java 21 bytecode",
+              ),
+              (
+                  "languageVersion.set(JavaLanguageVersion.of(21))",
+                  "languageVersion.set(JavaLanguageVersion.of(25))",
+              ),
+          ]
+          for old, new in replacements:
+              if old not in gradle:
+                  raise RuntimeError(f"Expected build.gradle.kts text not found: {old}")
+              gradle = gradle.replace(old, new, 1)
+
+          jcef_build_dependency = '        bundledPlugin("intellij.platform.ui.jcef")\n'
+          if jcef_build_dependency not in gradle:
+              create_dependency = '        create(properties("platformType"), properties("platformVersion"))\n'
+              if create_dependency not in gradle:
+                  raise RuntimeError("IntelliJ Platform dependency insertion point not found")
+              gradle = gradle.replace(create_dependency, create_dependency + "\n" + jcef_build_dependency, 1)
+          gradle_path.write_text(gradle)
+
+          properties_path = Path("jetbrains/plugin/gradle.properties.template")
+          properties = properties_path.read_text()
+          for old, new in [
+              ("platformVersion=2024.3", "platformVersion=2026.2"),
+              ("pluginSinceBuild=243", "pluginSinceBuild=262"),
+          ]:
+              if old not in properties:
+                  raise RuntimeError(f"Expected gradle.properties.template text not found: {old}")
+              properties = properties.replace(old, new, 1)
+          properties_path.write_text(properties)
+
+          publish_path = Path(".github/workflows/marketplace-publish.yml")
+          publish = publish_path.read_text()
+          java_21 = '                  java-version: "21"'
+          java_25 = '                  java-version: "25"'
+          if java_21 not in publish:
+              raise RuntimeError("JetBrains publish Java version insertion point not found")
+          publish_path.write_text(publish.replace(java_21, java_25, 1))
+          PY
+
+      - name: Commit release changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/one-shot-release-5.17.1.yml
+          git add -A
+          git commit -m "fix(jetbrains): support CLion 2026.2"
+          git push origin main
+
+      - name: Trigger Publish Extension
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run marketplace-publish.yml --ref main
