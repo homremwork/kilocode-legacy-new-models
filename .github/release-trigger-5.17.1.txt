@@ -1,0 +1,1 @@
+Rebuild JetBrains artifact after removing the invalid build-time JCEF module dependency.
