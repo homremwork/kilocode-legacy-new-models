@@ -178,3 +178,46 @@ def mergeDirectories(List<File> dirs, File targetDir, File outputFile = null) {
         outputFile.text = outputContent.toString()
     }
 }
+
+// buildPlugin archives the output of prepareSandbox. The runtime files are initially
+// assembled in a staging directory named after pluginGroup's final segment ("jetbrains").
+// Merge that staging directory into the actual pluginDirectory using task-provided paths,
+// rather than a product/version-specific idea-sandbox path.
+gradle.projectsEvaluated {
+    tasks.named('prepareSandbox') {
+        doLast {
+            def mode = project.ext.get('debugMode').toString()
+            if (mode == 'idea' || mode == 'none') {
+                return
+            }
+
+            def stagingName = project.findProperty('pluginGroup').toString().split('\\.').last()
+            def stagingDirectory = new File(defaultDestinationDirectory.get().asFile, stagingName)
+            def targetPluginDirectory = pluginDirectory.get().asFile
+
+            if (!stagingDirectory.isDirectory()) {
+                throw new GradleException("Missing staged JetBrains runtime directory: ${stagingDirectory}")
+            }
+
+            project.copy {
+                from(stagingDirectory)
+                into(targetPluginDirectory)
+            }
+            project.delete(stagingDirectory)
+
+            def vscodePlugin = project.ext.get('vscodePlugin').toString()
+            def requiredEntries = ['runtime', 'node_modules', vscodePlugin, 'platform.txt']
+            def missingEntries = requiredEntries.findAll {
+                !new File(targetPluginDirectory, it).exists()
+            }
+
+            if (!missingEntries.isEmpty()) {
+                throw new GradleException(
+                    "Incomplete JetBrains plugin sandbox; missing: ${missingEntries.join(', ')} in ${targetPluginDirectory}",
+                )
+            }
+
+            println "Merged complete runtime payload into ${targetPluginDirectory}"
+        }
+    }
+}
