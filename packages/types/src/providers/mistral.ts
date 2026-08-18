@@ -14,6 +14,8 @@ const adjustableReasoningEfforts: Array<"none" | "minimal" | "low" | "medium" | 
 	"xhigh",
 ]
 
+const binaryReasoningEfforts: Array<"none" | "high"> = ["none", "high"]
+
 export const mistralModels = {
 	"magistral-medium-latest": {
 		maxTokens: 8192,
@@ -59,6 +61,17 @@ export const mistralModels = {
 		preserveReasoning: true,
 		inputPrice: 1.5,
 		outputPrice: 7.5,
+	},
+	"zai-glm-5-2": {
+		maxTokens: 131_072,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		supportsReasoningBinary: true,
+		supportsReasoningEffort: binaryReasoningEfforts,
+		preserveReasoning: true,
 	},
 	"codestral-latest": {
 		maxTokens: 8192,
