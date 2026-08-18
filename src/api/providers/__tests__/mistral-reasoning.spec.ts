@@ -23,6 +23,16 @@ describe("MistralHandler reasoning effort", () => {
 		expect(handler.getModel().reasoningEffort).toBeUndefined()
 	})
 
+	it("omits stale effort when the reasoning toggle is unset", () => {
+		const handler = new MistralHandler({
+			apiModelId: "mistral-small-latest",
+			mistralApiKey: "test-key",
+			reasoningEffort: "high",
+		})
+
+		expect(handler.getModel().reasoningEffort).toBeUndefined()
+	})
+
 	it("does not send Kilo-only effort values to Mistral", () => {
 		const handler = new MistralHandler({
 			apiModelId: "mistral-small-latest",
