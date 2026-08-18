@@ -17,15 +17,10 @@ import { UserMessage } from "@mistralai/mistralai/models/components/usermessage"
  * @returns A normalized 9-character alphanumeric ID compatible with Mistral
  */
 export function normalizeMistralToolCallId(id: string): string {
-	// Extract only alphanumeric characters
 	const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "")
-
-	// Take first 9 characters, or pad with zeros if shorter
 	if (alphanumeric.length >= 9) {
 		return alphanumeric.slice(0, 9)
 	}
-
-	// Pad with zeros to reach 9 characters
 	return alphanumeric.padEnd(9, "0")
 }
 
@@ -35,7 +30,6 @@ export type MistralMessage =
 	| (AssistantMessage & { role: "assistant" })
 	| (ToolMessage & { role: "tool" })
 
-// Type for Mistral tool calls in assistant messages
 type MistralToolCallMessage = {
 	id: string
 	type: "function"
@@ -43,6 +37,30 @@ type MistralToolCallMessage = {
 		name: string
 		arguments: string
 	}
+}
+
+export type PersistedMistralThinkingDetail = {
+	type: "mistral.thinking"
+	chunk: {
+		type: "thinking"
+		thinking: Array<Record<string, unknown>>
+		signature?: string | null
+		closed?: boolean
+	}
+}
+
+function getPersistedThinkingChunks(message: Anthropic.Messages.MessageParam) {
+	const reasoningDetails = (message as Anthropic.Messages.MessageParam & {
+		reasoning_details?: PersistedMistralThinkingDetail[]
+	}).reasoning_details
+
+	if (!Array.isArray(reasoningDetails)) {
+		return []
+	}
+
+	return reasoningDetails
+		.filter((detail): detail is PersistedMistralThinkingDetail => detail?.type === "mistral.thinking" && !!detail.chunk)
+		.map((detail) => detail.chunk)
 }
 
 export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): MistralMessage[] {
@@ -65,23 +83,18 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 							acc.toolMessages.push(part)
 						} else if (part.type === "text" || part.type === "image") {
 							acc.nonToolMessages.push(part)
-						} // user cannot send tool_use messages
+						}
 						return acc
 					},
 					{ nonToolMessages: [], toolMessages: [] },
 				)
 
-				// If there are tool results, handle them
-				// Mistral's message order is strict: user → assistant → tool → assistant
-				// We CANNOT put user messages after tool messages
 				if (toolMessages.length > 0) {
-					// Convert tool_result blocks to Mistral tool messages
 					for (const toolResult of toolMessages) {
 						let resultContent: string
 						if (typeof toolResult.content === "string") {
 							resultContent = toolResult.content
 						} else if (Array.isArray(toolResult.content)) {
-							// Extract text from content blocks
 							resultContent = toolResult.content
 								.filter((block): block is Anthropic.TextBlockParam => block.type === "text")
 								.map((block) => block.text)
@@ -96,10 +109,7 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 							content: resultContent,
 						} as ToolMessage & { role: "tool" })
 					}
-					// Note: We intentionally skip any non-tool user content when there are tool results
-					// because Mistral doesn't allow user messages after tool messages
 				} else if (nonToolMessages.length > 0) {
-					// Only add user content if there are NO tool results
 					mistralMessages.push({
 						role: "user",
 						content: nonToolMessages.map((part) => {
@@ -107,12 +117,10 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 								return {
 									type: "image_url",
 									imageUrl: {
-										// kilocode_change begin support type==url
 										url:
 											part.source.type === "url"
 												? part.source.url
 												: `data:${part.source.media_type};base64,${part.source.data}`,
-										// kilocode_change end
 									},
 								}
 							}
@@ -130,25 +138,28 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 							acc.toolMessages.push(part)
 						} else if (part.type === "text" || part.type === "image") {
 							acc.nonToolMessages.push(part)
-						} // assistant cannot send tool_result messages
+						}
 						return acc
 					},
 					{ nonToolMessages: [], toolMessages: [] },
 				)
 
-				let content: string | undefined
+				let textContent: string | undefined
 				if (nonToolMessages.length > 0) {
-					content = nonToolMessages
-						.map((part) => {
-							if (part.type === "image") {
-								return "" // impossible as the assistant cannot send images
-							}
-							return part.text
-						})
+					textContent = nonToolMessages
+						.map((part) => (part.type === "image" ? "" : part.text))
 						.join("\n")
 				}
 
-				// Convert tool_use blocks to Mistral toolCalls format
+				const thinkingChunks = getPersistedThinkingChunks(anthropicMessage)
+				const content =
+					thinkingChunks.length > 0
+						? ([
+							...thinkingChunks,
+							...(textContent ? [{ type: "text", text: textContent }] : []),
+						] as AssistantMessage["content"])
+						: textContent
+
 				let toolCalls: MistralToolCallMessage[] | undefined
 				if (toolMessages.length > 0) {
 					toolCalls = toolMessages.map((toolUse) => ({
@@ -162,8 +173,6 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 					}))
 				}
 
-				// Mistral requires either content or toolCalls to be non-empty
-				// If we have toolCalls but no content, we need to handle this properly
 				const assistantMessage: AssistantMessage & { role: "assistant" } = {
 					role: "assistant",
 					content,
