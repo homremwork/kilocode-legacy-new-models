@@ -315,7 +315,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		const id = this.options.apiModelId ?? mistralDefaultModelId
 		const metadataId = id === "glm-5-2" ? "zai-glm-5-2" : id
 		const info: ModelInfo = mistralModels[metadataId as MistralModelId] ?? mistralModels[mistralDefaultModelId]
-		const maxTokens = this.options.includeMaxTokens ? info.maxTokens : undefined
+		const maxTokens = this.options.includeMaxTokens ? (info.maxTokens ?? undefined) : undefined
 		const temperature = this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE
 		const reasoningEffort = this.getReasoningEffort(info)
 
