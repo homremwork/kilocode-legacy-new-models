@@ -5,7 +5,14 @@ export type MistralModelId = keyof typeof mistralModels
 
 export const mistralDefaultModelId: MistralModelId = "codestral-latest"
 
-const adjustableReasoningEfforts = ["none", "minimal", "low", "medium", "high", "xhigh"] as const
+const adjustableReasoningEfforts: Array<"none" | "minimal" | "low" | "medium" | "high" | "xhigh"> = [
+	"none",
+	"minimal",
+	"low",
+	"medium",
+	"high",
+	"xhigh",
+]
 
 export const mistralModels = {
 	"magistral-medium-latest": {
