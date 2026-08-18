@@ -18,7 +18,6 @@ import { ApiHandlerOptions } from "../../shared/api"
 
 import { convertToMistralMessages, type PersistedMistralThinkingDetail } from "../transform/mistral-format"
 import { ApiStream } from "../transform/stream"
-import { handleProviderError } from "./utils/error-handler"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -30,8 +29,6 @@ import type { FimHandler } from "./kilocode/FimHandler" // kilocode_change
 type MistralReasoningEffort = Extract<ReasoningEffortExtended, "none" | "minimal" | "low" | "medium" | "high" | "xhigh">
 const MISTRAL_REASONING_EFFORTS = new Set<MistralReasoningEffort>(["none", "minimal", "low", "medium", "high", "xhigh"])
 
-// Type helper to handle thinking chunks from Mistral API
-// The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union.
 type ContentChunkWithThinking = {
 	type: string
 	text?: string
@@ -40,7 +37,6 @@ type ContentChunkWithThinking = {
 	closed?: boolean
 }
 
-// Type for Mistral tool calls in stream delta
 type MistralToolCall = {
 	id?: string
 	type?: string
@@ -50,7 +46,6 @@ type MistralToolCall = {
 	}
 }
 
-// Type for Mistral tool definition - matches Mistral SDK Tool type
 type MistralTool = {
 	type: "function"
 	function: {
@@ -99,7 +94,10 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	private getReasoningEffort(info: ModelInfo): MistralReasoningEffort | undefined {
-		if (this.options.enableReasoningEffort === false) {
+		// The explicit UI toggle is authoritative. This also prevents a stale
+		// reasoningEffort value from another model/provider from enabling Mistral
+		// reasoning when the checkbox is off or has never been enabled.
+		if (this.options.enableReasoningEffort !== true) {
 			return undefined
 		}
 
@@ -119,12 +117,32 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		return effort as MistralReasoningEffort
 	}
 
-	/**
-	 * Kilo persists provider reasoning_details on assistant messages. Exposing the
-	 * original Mistral ThinkChunk here lets mistral-format replay it on later turns.
-	 */
 	getReasoningDetails(): PersistedMistralThinkingDetail[] | undefined {
 		return this.reasoningDetails.length > 0 ? this.reasoningDetails : undefined
+	}
+
+	private preserveThinkingChunk(chunk: ContentChunkWithThinking) {
+		if (!chunk.thinking) return
+
+		const lastDetail = this.reasoningDetails[this.reasoningDetails.length - 1]
+		const canContinuePreviousChunk = lastDetail?.type === "mistral.thinking" && lastDetail.chunk.closed !== true
+
+		if (canContinuePreviousChunk) {
+			lastDetail.chunk.thinking.push(...chunk.thinking.map((part) => ({ ...part })))
+			if (chunk.signature !== undefined) lastDetail.chunk.signature = chunk.signature
+			if (chunk.closed !== undefined) lastDetail.chunk.closed = chunk.closed
+			return
+		}
+
+		this.reasoningDetails.push({
+			type: "mistral.thinking",
+			chunk: {
+				type: "thinking",
+				thinking: chunk.thinking.map((part) => ({ ...part })),
+				...(chunk.signature !== undefined ? { signature: chunk.signature } : {}),
+				...(chunk.closed !== undefined ? { closed: chunk.closed } : {}),
+			},
+		})
 	}
 
 	private restoreThinkingSignatures(serializedRequest: Record<string, any>, requestOptions: MistralRequestOptions) {
@@ -228,16 +246,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 				} else if (Array.isArray(delta.content)) {
 					for (const chunk of delta.content as ContentChunkWithThinking[]) {
 						if (chunk.type === "thinking" && chunk.thinking) {
-							this.reasoningDetails.push({
-								type: "mistral.thinking",
-								chunk: {
-									type: "thinking",
-									thinking: chunk.thinking.map((part) => ({ ...part })),
-									...(chunk.signature !== undefined ? { signature: chunk.signature } : {}),
-									...(chunk.closed !== undefined ? { closed: chunk.closed } : {}),
-								},
-							})
-
+							this.preserveThinkingChunk(chunk)
 							for (const thinkingPart of chunk.thinking) {
 								if (thinkingPart.type === "text" && thinkingPart.text) {
 									yield { type: "reasoning", text: thinkingPart.text }
