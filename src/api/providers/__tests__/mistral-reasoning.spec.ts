@@ -12,6 +12,28 @@ describe("MistralHandler reasoning effort", () => {
 		expect(handler.getModel().reasoningEffort).toBe("high")
 	})
 
+	it.each(["none", "high"] as const)("supports %s reasoning for Mistral-hosted GLM 5.2", (reasoningEffort) => {
+		const handler = new MistralHandler({
+			apiModelId: "zai-glm-5-2",
+			mistralApiKey: "test-key",
+			enableReasoningEffort: true,
+			reasoningEffort,
+		})
+
+		expect(handler.getModel().reasoningEffort).toBe(reasoningEffort)
+	})
+
+	it("rejects unsupported intermediate reasoning efforts for Mistral-hosted GLM 5.2", () => {
+		const handler = new MistralHandler({
+			apiModelId: "zai-glm-5-2",
+			mistralApiKey: "test-key",
+			enableReasoningEffort: true,
+			reasoningEffort: "medium",
+		})
+
+		expect(handler.getModel().reasoningEffort).toBeUndefined()
+	})
+
 	it("omits effort when reasoning is explicitly disabled", () => {
 		const handler = new MistralHandler({
 			apiModelId: "mistral-medium-3-5",
