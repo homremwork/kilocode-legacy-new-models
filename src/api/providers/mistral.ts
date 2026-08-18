@@ -1,9 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Mistral } from "@mistralai/mistralai"
+import { chatCompletionStreamRequestToJSON } from "@mistralai/mistralai/models/components/chatcompletionstreamrequest"
 import OpenAI from "openai"
 
 import {
 	type MistralModelId,
+	type ModelInfo,
+	type ReasoningEffortExtended,
 	mistralDefaultModelId,
 	mistralModels,
 	MISTRAL_DEFAULT_TEMPERATURE,
@@ -13,7 +16,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToMistralMessages } from "../transform/mistral-format"
+import { convertToMistralMessages, type PersistedMistralThinkingDetail } from "../transform/mistral-format"
 import { ApiStream } from "../transform/stream"
 import { handleProviderError } from "./utils/error-handler"
 
@@ -24,12 +27,17 @@ import { streamSse } from "../../services/autocomplete/continuedev/core/fetch/st
 import type { CompletionUsage } from "./openrouter" // kilocode_change
 import type { FimHandler } from "./kilocode/FimHandler" // kilocode_change
 
+type MistralReasoningEffort = Extract<ReasoningEffortExtended, "none" | "minimal" | "low" | "medium" | "high" | "xhigh">
+const MISTRAL_REASONING_EFFORTS = new Set<MistralReasoningEffort>(["none", "minimal", "low", "medium", "high", "xhigh"])
+
 // Type helper to handle thinking chunks from Mistral API
-// The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union
+// The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union.
 type ContentChunkWithThinking = {
 	type: string
 	text?: string
-	thinking?: Array<{ type: string; text?: string }>
+	thinking?: Array<Record<string, unknown> & { type: string; text?: string }>
+	signature?: string | null
+	closed?: boolean
 }
 
 // Type for Mistral tool calls in stream delta
@@ -52,10 +60,20 @@ type MistralTool = {
 	}
 }
 
+type MistralRequestOptions = {
+	model: string
+	messages: ReturnType<typeof convertToMistralMessages>
+	maxTokens: number
+	temperature: number
+	tools?: MistralTool[]
+	toolChoice?: "auto" | "none" | "any" | "required" | { type: "function"; function: { name: string } }
+}
+
 export class MistralHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: Mistral
 	private readonly providerName = "Mistral"
+	private reasoningDetails: PersistedMistralThinkingDetail[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -64,16 +82,108 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			throw new Error("Mistral API key is required")
 		}
 
-		// Set default model ID if not provided.
 		const apiModelId = options.apiModelId || mistralDefaultModelId
 		this.options = { ...options, apiModelId }
 
 		this.client = new Mistral({
-			serverURL: apiModelId.startsWith("codestral-")
-				? this.options.mistralCodestralUrl || "https://codestral.mistral.ai"
-				: "https://api.mistral.ai",
+			serverURL: this.getBaseUrl(),
 			apiKey: this.options.mistralApiKey,
 		})
+	}
+
+	private getBaseUrl(): string {
+		const modelId = this.options.apiModelId ?? mistralDefaultModelId
+		return modelId.startsWith("codestral-")
+			? this.options.mistralCodestralUrl || "https://codestral.mistral.ai"
+			: "https://api.mistral.ai"
+	}
+
+	private getReasoningEffort(info: ModelInfo): MistralReasoningEffort | undefined {
+		if (this.options.enableReasoningEffort === false) {
+			return undefined
+		}
+
+		const effort = this.options.reasoningEffort
+		if (!effort || effort === "disable" || !MISTRAL_REASONING_EFFORTS.has(effort as MistralReasoningEffort)) {
+			return undefined
+		}
+
+		const supported = info.supportsReasoningEffort
+		if (Array.isArray(supported) && !supported.includes(effort)) {
+			return undefined
+		}
+		if (!supported) {
+			return undefined
+		}
+
+		return effort as MistralReasoningEffort
+	}
+
+	/**
+	 * Kilo persists provider reasoning_details on assistant messages. Exposing the
+	 * original Mistral ThinkChunk here lets mistral-format replay it on later turns.
+	 */
+	getReasoningDetails(): PersistedMistralThinkingDetail[] | undefined {
+		return this.reasoningDetails.length > 0 ? this.reasoningDetails : undefined
+	}
+
+	private restoreThinkingSignatures(serializedRequest: Record<string, any>, requestOptions: MistralRequestOptions) {
+		const serializedMessages = serializedRequest.messages
+		if (!Array.isArray(serializedMessages)) return
+
+		requestOptions.messages.forEach((sourceMessage, messageIndex) => {
+			const sourceContent = (sourceMessage as any).content
+			const serializedContent = serializedMessages[messageIndex]?.content
+			if (!Array.isArray(sourceContent) || !Array.isArray(serializedContent)) return
+
+			sourceContent.forEach((sourceChunk: any, chunkIndex: number) => {
+				if (sourceChunk?.type !== "thinking") return
+				const serializedChunk = serializedContent[chunkIndex]
+				if (!serializedChunk || serializedChunk.type !== "thinking") return
+				if (sourceChunk.signature !== undefined) serializedChunk.signature = sourceChunk.signature
+				if (sourceChunk.closed !== undefined) serializedChunk.closed = sourceChunk.closed
+			})
+		})
+	}
+
+	private async createReasoningResponse(
+		requestOptions: MistralRequestOptions,
+		reasoningEffort: MistralReasoningEffort,
+	): Promise<AsyncIterable<{ data: any }>> {
+		// SDK 1.9.x predates reasoning_effort and strips unknown fields from its
+		// generated outbound schema. Serialize all known fields with the SDK, add
+		// the current API field explicitly, then stream the standard SSE response.
+		const serializedRequest = JSON.parse(
+			chatCompletionStreamRequestToJSON({ ...requestOptions, stream: true } as any),
+		) as Record<string, any>
+		serializedRequest.reasoning_effort = reasoningEffort
+		this.restoreThinkingSignatures(serializedRequest, requestOptions)
+
+		const baseUrl = this.getBaseUrl().endsWith("/") ? this.getBaseUrl() : `${this.getBaseUrl()}/`
+		const endpoint = new URL("v1/chat/completions", baseUrl)
+		const response = await fetch(endpoint, {
+			method: "POST",
+			headers: {
+				...DEFAULT_HEADERS,
+				"Content-Type": "application/json",
+				Accept: "text/event-stream",
+				Authorization: `Bearer ${this.options.mistralApiKey}`,
+			},
+			body: JSON.stringify(serializedRequest),
+		})
+
+		if (!response.ok) {
+			const errorText = await response.text()
+			throw new Error(`${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`)
+		}
+
+		return {
+			[Symbol.asyncIterator]: async function* () {
+				for await (const data of streamSse(response)) {
+					yield { data }
+				}
+			},
+		}
 	}
 
 	override async *createMessage(
@@ -81,37 +191,27 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: model, info, maxTokens, temperature } = this.getModel()
+		this.reasoningDetails = []
+		const { id: model, info, maxTokens, temperature, reasoningEffort } = this.getModel()
 
-		// Build request options
-		const requestOptions: {
-			model: string
-			messages: ReturnType<typeof convertToMistralMessages>
-			maxTokens: number
-			temperature: number
-			tools?: MistralTool[]
-			toolChoice?: "auto" | "none" | "any" | "required" | { type: "function"; function: { name: string } }
-		} = {
+		const requestOptions: MistralRequestOptions = {
 			model,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToMistralMessages(messages)],
-			maxTokens: maxTokens ?? info.maxTokens,
+			maxTokens: maxTokens ?? info.maxTokens ?? 8192,
 			temperature,
 		}
 
-		// Add tools if provided and toolProtocol is not 'xml' and model supports native tools
 		const supportsNativeTools = info.supportsNativeTools ?? false
 		if (metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml" && supportsNativeTools) {
 			requestOptions.tools = this.convertToolsForMistral(metadata.tools)
-			// Always use "any" to require tool use
 			requestOptions.toolChoice = "any"
 		}
 
-		// Temporary debug log for QA
-		// console.log("[MISTRAL DEBUG] Raw API request body:", requestOptions)
-
-		let response
+		let response: AsyncIterable<{ data: any }>
 		try {
-			response = await this.client.chat.stream(requestOptions)
+			response = reasoningEffort
+				? await this.createReasoningResponse(requestOptions, reasoningEffort)
+				: (await this.client.chat.stream(requestOptions))
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "createMessage")
@@ -124,31 +224,34 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 
 			if (delta?.content) {
 				if (typeof delta.content === "string") {
-					// Handle string content as text
 					yield { type: "text", text: delta.content }
 				} else if (Array.isArray(delta.content)) {
-					// Handle array of content chunks
-					// The SDK v1.9.18 supports ThinkChunk with type "thinking"
 					for (const chunk of delta.content as ContentChunkWithThinking[]) {
 						if (chunk.type === "thinking" && chunk.thinking) {
-							// Handle thinking content as reasoning chunks
-							// ThinkChunk has a 'thinking' property that contains an array of text/reference chunks
+							this.reasoningDetails.push({
+								type: "mistral.thinking",
+								chunk: {
+									type: "thinking",
+									thinking: chunk.thinking.map((part) => ({ ...part })),
+									...(chunk.signature !== undefined ? { signature: chunk.signature } : {}),
+									...(chunk.closed !== undefined ? { closed: chunk.closed } : {}),
+								},
+							})
+
 							for (const thinkingPart of chunk.thinking) {
 								if (thinkingPart.type === "text" && thinkingPart.text) {
 									yield { type: "reasoning", text: thinkingPart.text }
 								}
 							}
 						} else if (chunk.type === "text" && chunk.text) {
-							// Handle text content normally
 							yield { type: "text", text: chunk.text }
 						}
 					}
 				}
 			}
 
-			// Handle tool calls in stream
-			// Mistral SDK provides tool_calls in delta similar to OpenAI format
-			const toolCalls = (delta as { toolCalls?: MistralToolCall[] })?.toolCalls
+			const toolCalls = (delta as { toolCalls?: MistralToolCall[]; tool_calls?: MistralToolCall[] })?.toolCalls ??
+				(delta as { tool_calls?: MistralToolCall[] })?.tool_calls
 			if (toolCalls) {
 				for (let i = 0; i < toolCalls.length; i++) {
 					const toolCall = toolCalls[i]
@@ -163,19 +266,16 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			}
 
 			if (event.data.usage) {
+				const usage = event.data.usage
 				yield {
 					type: "usage",
-					inputTokens: event.data.usage.promptTokens || 0,
-					outputTokens: event.data.usage.completionTokens || 0,
+					inputTokens: usage.promptTokens ?? usage.prompt_tokens ?? 0,
+					outputTokens: usage.completionTokens ?? usage.completion_tokens ?? 0,
 				}
 			}
 		}
 	}
 
-	/**
-	 * Convert OpenAI tool definitions to Mistral format.
-	 * Mistral uses the same format as OpenAI for function tools.
-	 */
 	private convertToolsForMistral(tools: OpenAI.Chat.ChatCompletionTool[]): MistralTool[] {
 		return tools
 			.filter((tool) => tool.type === "function")
@@ -184,7 +284,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 				function: {
 					name: tool.function.name,
 					description: tool.function.description,
-					// Mistral SDK requires parameters to be defined, use empty object as fallback
 					parameters: (tool.function.parameters as Record<string, unknown>) || {},
 				},
 			}))
@@ -193,12 +292,11 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	override getModel() {
 		const id = this.options.apiModelId ?? mistralDefaultModelId
 		const info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
-
-		// @TODO: Move this to the `getModelParams` function.
 		const maxTokens = this.options.includeMaxTokens ? info.maxTokens : undefined
 		const temperature = this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE
+		const reasoningEffort = this.getReasoningEffort(info)
 
-		return { id, info, maxTokens, temperature }
+		return { id, info, maxTokens, temperature, reasoningEffort }
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
@@ -214,7 +312,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			const content = response.choices?.[0]?.message.content
 
 			if (Array.isArray(content)) {
-				// Only return text content, filter out thinking content for non-streaming
 				return (content as ContentChunkWithThinking[])
 					.filter((c) => c.type === "text" && c.text)
 					.map((c) => c.text || "")
@@ -241,7 +338,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			streamFim: this.streamFim.bind(this),
 			getModel: () => this.getModel(),
 			getTotalCost: (usage: CompletionUsage) => {
-				// Calculate cost based on model pricing
 				const { info } = this.getModel()
 				const inputCost = ((usage.prompt_tokens ?? 0) / 1_000_000) * (info.inputPrice ?? 0)
 				const outputCost = ((usage.completion_tokens ?? 0) / 1_000_000) * (info.outputPrice ?? 0)
@@ -257,14 +353,8 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		onUsage?: (usage: CompletionUsage) => void,
 	): AsyncGenerator<string> {
 		const { id: model, maxTokens } = this.getModel()
-
-		// Get the base URL for the model
-		// copy pasted from constructor, be sure to keep in sync
-		const baseUrl = model.startsWith("codestral-")
-			? this.options.mistralCodestralUrl || "https://codestral.mistral.ai"
-			: "https://api.mistral.ai"
-
-		const endpoint = new URL("v1/fim/completions", baseUrl)
+		const baseUrl = this.getBaseUrl()
+		const endpoint = new URL("v1/fim/completions", baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`)
 
 		const headers: Record<string, string> = {
 			...DEFAULT_HEADERS,
@@ -273,7 +363,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			Authorization: `Bearer ${this.options.mistralApiKey}`,
 		}
 
-		// temperature: 0.2 is mentioned as a sane example in mistral's docs
 		const temperature = 0.2
 		const requestMaxTokens = 256
 
@@ -301,8 +390,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 				yield content
 			}
 
-			// Call usage callback when available
-			// Note: Mistral FIM API returns usage in the final chunk with prompt_tokens and completion_tokens
 			if (data.usage && onUsage) {
 				onUsage({
 					prompt_tokens: data.usage.prompt_tokens,
