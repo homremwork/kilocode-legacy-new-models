@@ -239,19 +239,31 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 
 		for await (const event of response) {
 			const delta = event.data.choices[0]?.delta
+			const content = delta?.content
+			const hasThinkingChunks =
+				Array.isArray(content) && (content as ContentChunkWithThinking[]).some((chunk) => chunk.type === "thinking")
+			const reasoningContent = (delta as { reasoningContent?: string; reasoning_content?: string } | undefined)?.reasoningContent ??
+				(delta as { reasoning_content?: string } | undefined)?.reasoning_content
 
-			if (delta?.content) {
-				if (typeof delta.content === "string") {
-					yield { type: "text", text: delta.content }
-				} else if (Array.isArray(delta.content)) {
-					for (const chunk of delta.content as ContentChunkWithThinking[]) {
+			// Mistral's documented reasoning responses use ThinkChunk in delta.content.
+			// Some hosted third-party reasoning models may instead expose the common
+			// reasoning_content extension; surface it as a best-effort fallback without
+			// duplicating reasoning when normalized ThinkChunks are present.
+			if (!hasThinkingChunks && reasoningContent) {
+				yield { type: "reasoning", text: reasoningContent }
+			}
+
+			if (content) {
+				if (typeof content === "string") {
+					yield { type: "text", text: content }
+				} else if (Array.isArray(content)) {
+					for (const chunk of content as ContentChunkWithThinking[]) {
 						if (chunk.type === "thinking" && chunk.thinking) {
 							this.preserveThinkingChunk(chunk)
 							for (const thinkingPart of chunk.thinking) {
 								if (thinkingPart.type === "text" && thinkingPart.text) {
 									yield { type: "reasoning", text: thinkingPart.text }
 								}
-							}
 						} else if (chunk.type === "text" && chunk.text) {
 							yield { type: "text", text: chunk.text }
 						}
