@@ -5,6 +5,8 @@ export type MistralModelId = keyof typeof mistralModels
 
 export const mistralDefaultModelId: MistralModelId = "codestral-latest"
 
+const adjustableReasoningEfforts = ["disable", "none", "minimal", "low", "medium", "high", "xhigh"] as const
+
 export const mistralModels = {
 	"magistral-medium-latest": {
 		maxTokens: 8192,
@@ -15,6 +17,8 @@ export const mistralModels = {
 		defaultToolProtocol: "native",
 		inputPrice: 2.0,
 		outputPrice: 5.0,
+		deprecated: true,
+		preserveReasoning: true,
 	},
 	"devstral-medium-latest": {
 		maxTokens: 8192,
@@ -35,6 +39,18 @@ export const mistralModels = {
 		defaultToolProtocol: "native",
 		inputPrice: 0.4,
 		outputPrice: 2.0,
+	},
+	"mistral-medium-3-5": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		supportsReasoningEffort: adjustableReasoningEfforts,
+		preserveReasoning: true,
+		inputPrice: 1.5,
+		outputPrice: 7.5,
 	},
 	"codestral-latest": {
 		maxTokens: 8192,
@@ -93,6 +109,8 @@ export const mistralModels = {
 		supportsPromptCache: false,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
+		supportsReasoningEffort: adjustableReasoningEfforts,
+		preserveReasoning: true,
 		inputPrice: 0.2,
 		outputPrice: 0.6,
 	},
@@ -105,6 +123,8 @@ export const mistralModels = {
 		supportsNativeTools: true,
 		inputPrice: 0.5,
 		outputPrice: 1.5,
+		deprecated: true,
+		preserveReasoning: true,
 	},
 	"devstral-small-latest": {
 		maxTokens: 131_000,
