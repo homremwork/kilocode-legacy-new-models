@@ -307,6 +307,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 					name: tool.function.name,
 					description: tool.function.description,
 					parameters: (tool.function.parameters as Record<string, unknown>) || {},
+				},
 			}))
 	}
 
@@ -393,7 +394,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			body: JSON.stringify({
 				model,
 				prompt: prefix,
-				suffix: suffix,
+				suffix,
 				max_tokens: Math.min(requestMaxTokens, maxTokens ?? requestMaxTokens),
 				temperature,
 				stream: true,
