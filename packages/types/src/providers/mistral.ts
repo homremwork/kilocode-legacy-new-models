@@ -5,7 +5,7 @@ export type MistralModelId = keyof typeof mistralModels
 
 export const mistralDefaultModelId: MistralModelId = "codestral-latest"
 
-const adjustableReasoningEfforts = ["disable", "none", "minimal", "low", "medium", "high", "xhigh"] as const
+const adjustableReasoningEfforts = ["none", "minimal", "low", "medium", "high", "xhigh"] as const
 
 export const mistralModels = {
 	"magistral-medium-latest": {
@@ -47,6 +47,7 @@ export const mistralModels = {
 		supportsPromptCache: false,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
+		supportsReasoningBinary: true,
 		supportsReasoningEffort: adjustableReasoningEfforts,
 		preserveReasoning: true,
 		inputPrice: 1.5,
@@ -109,6 +110,7 @@ export const mistralModels = {
 		supportsPromptCache: false,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
+		supportsReasoningBinary: true,
 		supportsReasoningEffort: adjustableReasoningEfforts,
 		preserveReasoning: true,
 		inputPrice: 0.2,
