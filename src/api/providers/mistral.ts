@@ -264,6 +264,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 								if (thinkingPart.type === "text" && thinkingPart.text) {
 									yield { type: "reasoning", text: thinkingPart.text }
 								}
+							}
 						} else if (chunk.type === "text" && chunk.text) {
 							yield { type: "text", text: chunk.text }
 						}
@@ -306,13 +307,13 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 					name: tool.function.name,
 					description: tool.function.description,
 					parameters: (tool.function.parameters as Record<string, unknown>) || {},
-				},
 			}))
 	}
 
 	override getModel() {
 		const id = this.options.apiModelId ?? mistralDefaultModelId
-		const info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
+		const metadataId = id === "glm-5-2" ? "zai-glm-5-2" : id
+		const info: ModelInfo = mistralModels[metadataId as MistralModelId] ?? mistralModels[mistralDefaultModelId]
 		const maxTokens = this.options.includeMaxTokens ? info.maxTokens : undefined
 		const temperature = this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE
 		const reasoningEffort = this.getReasoningEffort(info)
@@ -392,7 +393,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			body: JSON.stringify({
 				model,
 				prompt: prefix,
-				suffix,
+				suffix: suffix,
 				max_tokens: Math.min(requestMaxTokens, maxTokens ?? requestMaxTokens),
 				temperature,
 				stream: true,
