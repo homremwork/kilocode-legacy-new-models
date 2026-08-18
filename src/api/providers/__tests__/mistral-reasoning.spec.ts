@@ -23,6 +23,20 @@ describe("MistralHandler reasoning effort", () => {
 		expect(handler.getModel().reasoningEffort).toBe(reasoningEffort)
 	})
 
+	it("uses GLM 5.2 metadata for the Mistral Studio short alias", () => {
+		const handler = new MistralHandler({
+			apiModelId: "glm-5-2",
+			mistralApiKey: "test-key",
+			enableReasoningEffort: true,
+			reasoningEffort: "high",
+		})
+
+		const model = handler.getModel()
+		expect(model.id).toBe("glm-5-2")
+		expect(model.reasoningEffort).toBe("high")
+		expect(model.info.contextWindow).toBe(1_000_000)
+	})
+
 	it("rejects unsupported intermediate reasoning efforts for Mistral-hosted GLM 5.2", () => {
 		const handler = new MistralHandler({
 			apiModelId: "zai-glm-5-2",
