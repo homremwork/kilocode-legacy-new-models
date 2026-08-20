@@ -1,0 +1,75 @@
+name: Node 26 Non-Webview Extension
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [main]
+    pull_request:
+        types: [opened, reopened, ready_for_review, synchronize]
+        branches: [main]
+
+env:
+    NODE_VERSION: "26"
+    PNPM_VERSION: 10.16.0
+
+jobs:
+    test-extension-node26:
+        name: Non-webview extension (Node 26)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  check-latest: true
+                  cache: "pnpm"
+
+            # The project currently declares Node 20.20.0 exactly. Relax the
+            # engine only in this disposable CI checkout so this canary does
+            # not claim Node 26 as an officially supported project runtime.
+            - name: Allow Node 26 for compatibility test
+              shell: bash
+              run: |
+                  node <<'EOF'
+                  const fs = require("node:fs")
+
+                  for (const file of ["package.json", "src/package.json"]) {
+                      const pkg = JSON.parse(fs.readFileSync(file, "utf8"))
+                      pkg.engines.node = "20.20.0 || >=26 <27"
+                      fs.writeFileSync(file, JSON.stringify(pkg, null, "\t") + "\n")
+                  }
+                  EOF
+
+            - name: Show runtime versions
+              run: |
+                  node --version
+                  pnpm --version
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run packages/types tests
+              working-directory: packages/types
+              run: pnpm test
+
+            - name: Run packages/cloud tests
+              working-directory: packages/cloud
+              run: pnpm test
+
+            - name: Run packages/telemetry tests
+              working-directory: packages/telemetry
+              run: pnpm test
+
+            # `pnpm test` intentionally keeps src's pretest hook, which bundles
+            # the Node-side extension, token worker, and agent-runtime process.
+            - name: Run extension unit tests
+              working-directory: src
+              run: pnpm test
