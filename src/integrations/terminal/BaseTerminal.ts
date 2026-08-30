@@ -1,4 +1,5 @@
-import { truncateOutput, applyRunLengthEncoding, processBackspaces, processCarriageReturns } from "../misc/extract-text"
+import { truncateOutput, applyRunLengthEncoding } from "../misc/extract-text"
+import { compressTerminalProgress } from "../misc/compress-terminal-progress"
 import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
 
 import type {
@@ -226,8 +227,8 @@ export abstract class BaseTerminal implements RooTerminal {
 	}
 
 	/**
-	 * Gets whether to clear the ZSH EOL mark
-	 * @returns Whether the ZSH EOL mark clearing is enabled
+	 * Gets whether ZSH EOL mark clearing is enabled
+	 * @returns Whether ZSH EOL mark clearing is enabled
 	 */
 	public static getTerminalZshClearEolMark(): boolean {
 		return BaseTerminal.terminalZshClearEolMark
@@ -276,8 +277,7 @@ export abstract class BaseTerminal implements RooTerminal {
 		let processedInput = input
 
 		if (BaseTerminal.compressProgressBar) {
-			processedInput = processCarriageReturns(processedInput)
-			processedInput = processBackspaces(processedInput)
+			processedInput = compressTerminalProgress(processedInput)
 		}
 
 		// Default character limit to prevent context window explosion
