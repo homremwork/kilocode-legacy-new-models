@@ -4,8 +4,10 @@ on:
   push:
     branches: [feature/inline-terminal-shell-path]
     paths: [.github/workflows/apply-inline-terminal-shell-path-v2.yml]
+
 permissions:
   contents: write
+
 jobs:
   apply-patch:
     runs-on: ubuntu-latest
@@ -14,77 +16,9 @@ jobs:
         with:
           ref: feature/inline-terminal-shell-path
       - name: Apply guarded source updates
-        shell: bash
-        run: |
-          python3 <<'PY'
-          from pathlib import Path
-          import json,re
-          def E(p,f):
-            p=Path(p); a=p.read_text(); b=f(a)
-            if a==b: raise RuntimeError(f"{p}: no change")
-            p.write_text(b)
-          def O(s,a,b,l):
-            n=s.count(a)
-            if n!=1: raise RuntimeError(f"{l}: {n} matches")
-            return s.replace(a,b,1)
-          E('packages/types/src/global-settings.ts',lambda s:O(s,'"SambaNovaApiKey"','"sambaNovaApiKey"','samba key'))
-          E('packages/types/src/vscode-extension-host.ts',lambda s:O(s,'\t| "terminalShellIntegrationDisabled"\n\t| "terminalCommandDelay"','\t| "terminalShellIntegrationDisabled"\n\t| "terminalInlineShellPath"\n\t| "terminalCommandDelay"','ExtensionState'))
-          def provider(s):
-            s=O(s,'\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalCommandDelay,','\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay,','provider destructure')
-            s=O(s,'\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,','\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,','provider post')
-            return O(s,'\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,','\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath: stateValues.terminalInlineShellPath,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,','provider state')
-          E('src/core/webview/ClineProvider.ts',provider)
-          def settings(s):
-            s=O(s,'\t\tterminalShellIntegrationDisabled, // Added from upstream\n\t\tterminalCommandDelay,','\t\tterminalShellIntegrationDisabled, // Added from upstream\n\t\tterminalInlineShellPath,\n\t\tterminalCommandDelay,','settings destructure')
-            s=O(s,'\t\t\t\t\tterminalShellIntegrationDisabled,\n\t\t\t\t\tterminalCommandDelay,','\t\t\t\t\tterminalShellIntegrationDisabled,\n\t\t\t\t\tterminalInlineShellPath: terminalInlineShellPath?.trim() || undefined,\n\t\t\t\t\tterminalCommandDelay,','settings save')
-            pat=r'(?m)^(\s*)terminalShellIntegrationDisabled=\{terminalShellIntegrationDisabled\}\n'
-            s,n=re.subn(pat,lambda m:m.group(0)+m.group(1)+'terminalInlineShellPath={terminalInlineShellPath}\n',s,count=1)
-            if n!=1: raise RuntimeError(f'settings props: {n} matches')
-            return s
-          E('webview-ui/src/components/settings/SettingsView.tsx',settings)
-          def terminal(s):
-            s=O(s,'import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"','import { VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"','textfield')
-            s=O(s,'\tterminalShellIntegrationDisabled?: boolean\n\tterminalCommandDelay?: number','\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n\tterminalCommandDelay?: number','terminal prop')
-            s=O(s,'\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalCommandDelay"','\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalInlineShellPath"\n\t\t| "terminalCommandDelay"','terminal key')
-            s=O(s,'\tterminalShellIntegrationDisabled,\n\tterminalCommandDelay,','\tterminalShellIntegrationDisabled,\n\tterminalInlineShellPath,\n\tterminalCommandDelay,','terminal destructure')
-            a='\t\t\t\t\t\t{!terminalShellIntegrationDisabled && ('
-            b='''\t\t\t\t\t\t{(terminalShellIntegrationDisabled ?? true) && (\n\t\t\t\t\t\t\t<SearchableSetting settingId="terminal-inline-shell-path" section="terminal" label={t("settings:terminal.inlineShellPath.label")}>\n\t\t\t\t\t\t\t\t<label className="block font-medium mb-1">{t("settings:terminal.inlineShellPath.label")}</label>\n\t\t\t\t\t\t\t\t<VSCodeTextField value={terminalInlineShellPath ?? ""} placeholder="/bin/bash" onInput={(e: any) => setCachedStateField("terminalInlineShellPath", e.target.value)} style={{ width: "100%" }} data-testid="terminal-inline-shell-path-input" />\n\t\t\t\t\t\t\t\t<div className="text-vscode-descriptionForeground text-sm mt-1">{t("settings:terminal.inlineShellPath.description")}</div>\n\t\t\t\t\t\t\t</SearchableSetting>\n\t\t\t\t\t\t)}\n\n\t\t\t\t\t\t{!(terminalShellIntegrationDisabled ?? true) && ('''
-            return O(s,a,b,'terminal UI')
-          E('webview-ui/src/components/settings/TerminalSettings.tsx',terminal)
-          p=Path('webview-ui/src/i18n/locales/en/settings.json'); d=json.loads(p.read_text()); t=d['terminal']
-          if 'inlineShellPath' in t: raise RuntimeError('translation exists')
-          q={}
-          for k,v in t.items():
-            q[k]=v
-            if k=='shellIntegrationDisabled': q['inlineShellPath']={'label':'Inline terminal shell path','description':'Shell executable used by the inline terminal. Leave empty to use the system default.'}
-          d['terminal']=q; p.write_text(json.dumps(d,ensure_ascii=False,indent='\t')+'\n')
-          def info(s): return O(O(s,'export function getSystemInfoSection(cwd: string): string {','export function getSystemInfoSection(cwd: string, shell: string = getShell()): string {','info signature'),'Default Shell: ${getShell()}','Default Shell: ${shell}','info shell')
-          E('src/core/prompts/sections/system-info.ts',info)
-          E('src/core/prompts/types.ts',lambda s:O(s,'\tnewTaskRequireTodos: boolean\n','\tnewTaskRequireTodos: boolean\n\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n','prompt settings'))
-          def system(s):
-            s=O(s,'import { isEmpty } from "../../utils/object"','import { isEmpty } from "../../utils/object"\nimport { getEffectiveShell } from "../../utils/shell"','shell import')
-            g='\tif (!context) {\n\t\tthrow new Error("Extension context is required for generating system prompt")\n\t}\n'; ps=[m.start() for m in re.finditer(re.escape(g),s)]
-            if len(ps)!=2: raise RuntimeError(f'context guards: {len(ps)}')
-            x='\n\tconst effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)\n'
-            for z in reversed(ps): e=z+len(g); s=s[:e]+x+s[e:]
-            s=O(s,'${getSystemInfoSection(cwd)}','${getSystemInfoSection(cwd, effectiveShell)}','info call')
-            return O(s,'\t\tshell: vscode.env.shell,','\t\tshell: effectiveShell,','custom shell')
-          E('src/core/prompts/system.ts',system)
-          def preview(s):
-            s=O(s,'\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,','\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,\n\t\tterminalShellIntegrationDisabled,\n\t\tterminalInlineShellPath,','preview state')
-            return O(s,'\t\t\ttoolProtocol,\n\t\t\tisStealthModel:','\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\ttoolProtocol,\n\t\t\tisStealthModel:','preview settings')
-          E('src/core/webview/generateSystemPrompt.ts',preview)
-          def task(s):
-            a=s.find('\tprivate async getSystemPrompt(): Promise<string> {'); b=s.find('\n\tprivate ',a+1)
-            if a<0 or b<0: raise RuntimeError('getSystemPrompt bounds')
-            q=s[a:b]; q=O(q,'\t\t\tapiConfiguration,\n','\t\t\tapiConfiguration,\n\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n','task state')
-            q=O(q,'\t\t\t\ttoolProtocol,','\t\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\t\tterminalInlineShellPath,\n\t\t\t\ttoolProtocol,','task settings')
-            return s[:a]+q+s[b:]
-          E('src/core/task/Task.ts',task)
-          print('all guarded edits applied')
-          PY
-      - name: Remove one-shot workflows
-        run: git rm .github/workflows/apply-inline-terminal-shell-path.yml .github/workflows/apply-inline-terminal-shell-path-v2.yml
+        run: python3 .github/scripts/apply-inline-terminal-shell-path.py
+      - name: Remove one-shot helpers
+        run: git rm .github/workflows/apply-inline-terminal-shell-path.yml .github/workflows/apply-inline-terminal-shell-path-v2.yml .github/workflows/fix-inline-shell-patcher-anchor.yml .github/scripts/apply-inline-terminal-shell-path.py 2>/dev/null || true
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
