@@ -2,10 +2,8 @@ name: Apply Inline Terminal Shell Patch
 
 on:
   push:
-    branches:
-      - feature/inline-terminal-shell-path
-    paths:
-      - .github/workflows/apply-inline-terminal-shell-path.yml
+    branches: [feature/inline-terminal-shell-path]
+    paths: [.github/workflows/apply-inline-terminal-shell-path.yml]
 
 permissions:
   contents: write
@@ -17,217 +15,119 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: feature/inline-terminal-shell-path
-
       - name: Apply guarded source updates
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import json
+          import json, re
 
-          def read(path):
-              return Path(path).read_text()
+          def edit(path, fn):
+              p = Path(path); old = p.read_text(); new = fn(old)
+              if new == old: raise RuntimeError(f"{path}: edit made no change")
+              p.write_text(new)
 
-          def write(path, text):
-              Path(path).write_text(text)
+          def once(text, old, new, label):
+              n = text.count(old)
+              if n != 1: raise RuntimeError(f"{label}: expected 1 occurrence, got {n}")
+              return text.replace(old, new, 1)
 
-          def replace_once(path, old, new):
-              text = read(path)
-              count = text.count(old)
-              if count != 1:
-                  raise RuntimeError(f"{path}: expected exactly one occurrence, found {count}: {old!r}")
-              write(path, text.replace(old, new, 1))
+          # Repair accidental case change and expose new persisted setting.
+          edit("packages/types/src/global-settings.ts", lambda s: once(s, '"SambaNovaApiKey"', '"sambaNovaApiKey"', "sambaNova key"))
+          edit("packages/types/src/vscode-extension-host.ts", lambda s: once(
+              s, '\t| "terminalShellIntegrationDisabled"\n\t| "terminalCommandDelay"',
+              '\t| "terminalShellIntegrationDisabled"\n\t| "terminalInlineShellPath"\n\t| "terminalCommandDelay"', "ExtensionState"))
 
-          # Correct an accidental capitalization typo from the preceding schema edit.
-          replace_once(
-              "packages/types/src/global-settings.ts",
-              '\t"SambaNovaApiKey",',
-              '\t"sambaNovaApiKey",',
-          )
+          def provider(s):
+              s = once(s, '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalCommandDelay,',
+                       '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay,', "provider destructure")
+              s = once(s, '\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,',
+                       '\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,', "provider post state")
+              s = once(s, '\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,',
+                       '\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath: stateValues.terminalInlineShellPath,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,', "provider getState")
+              return s
+          edit("src/core/webview/ClineProvider.ts", provider)
 
-          # Expose the setting in ExtensionState so SettingsView can cache and edit it normally.
-          replace_once(
-              "packages/types/src/vscode-extension-host.ts",
-              '\t| "terminalShellIntegrationDisabled"\n\t| "terminalCommandDelay"',
-              '\t| "terminalShellIntegrationDisabled"\n\t| "terminalInlineShellPath"\n\t| "terminalCommandDelay"',
-          )
+          def settings_view(s):
+              s = once(s, '\t\tterminalShellIntegrationDisabled, // Added from upstream\n\t\tterminalCommandDelay,',
+                       '\t\tterminalShellIntegrationDisabled, // Added from upstream\n\t\tterminalInlineShellPath,\n\t\tterminalCommandDelay,', "settings destructure")
+              s = once(s, '\t\t\t\t\tterminalShellIntegrationDisabled,\n\t\t\t\t\tterminalCommandDelay,',
+                       '\t\t\t\t\tterminalShellIntegrationDisabled,\n\t\t\t\t\tterminalInlineShellPath: terminalInlineShellPath?.trim() || undefined,\n\t\t\t\t\tterminalCommandDelay,', "settings save")
+              s = once(s, '\t\t\t\tterminalShellIntegrationDisabled={terminalShellIntegrationDisabled}\n\t\t\t\tterminalCommandDelay={terminalCommandDelay}',
+                       '\t\t\t\tterminalShellIntegrationDisabled={terminalShellIntegrationDisabled}\n\t\t\t\tterminalInlineShellPath={terminalInlineShellPath}\n\t\t\t\tterminalCommandDelay={terminalCommandDelay}', "settings props")
+              return s
+          edit("webview-ui/src/components/settings/SettingsView.tsx", settings_view)
 
-          # Include the setting in provider state and state posted to the webview.
-          replace_once(
-              "src/core/webview/ClineProvider.ts",
-              '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalCommandDelay,',
-              '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay,',
-          )
-          replace_once(
-              "src/core/webview/ClineProvider.ts",
-              '\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,',
-              '\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\tterminalCommandDelay: terminalCommandDelay ?? 0,',
-          )
-          replace_once(
-              "src/core/webview/ClineProvider.ts",
-              '\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,',
-              '\t\t\tterminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath: stateValues.terminalInlineShellPath,\n\t\t\tterminalCommandDelay: stateValues.terminalCommandDelay ?? 0,',
-          )
+          def terminal_ui(s):
+              s = once(s, 'import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"',
+                       'import { VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"', "text field import")
+              s = once(s, '\tterminalShellIntegrationDisabled?: boolean\n\tterminalCommandDelay?: number',
+                       '\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n\tterminalCommandDelay?: number', "terminal prop")
+              s = once(s, '\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalCommandDelay"',
+                       '\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalInlineShellPath"\n\t\t| "terminalCommandDelay"', "terminal key")
+              s = once(s, '\tterminalShellIntegrationDisabled,\n\tterminalCommandDelay,',
+                       '\tterminalShellIntegrationDisabled,\n\tterminalInlineShellPath,\n\tterminalCommandDelay,', "terminal destructure")
+              marker = '\t\t\t\t\t\t{!terminalShellIntegrationDisabled && ('
+              if s.count(marker) != 1: raise RuntimeError(f"terminal UI marker count {s.count(marker)}")
+              field = '''\t\t\t\t\t\t{(terminalShellIntegrationDisabled ?? true) && (\n\t\t\t\t\t\t\t<SearchableSetting settingId="terminal-inline-shell-path" section="terminal" label={t("settings:terminal.inlineShellPath.label")}>\n\t\t\t\t\t\t\t\t<label className="block font-medium mb-1">{t("settings:terminal.inlineShellPath.label")}</label>\n\t\t\t\t\t\t\t\t<VSCodeTextField\n\t\t\t\t\t\t\t\t\tvalue={terminalInlineShellPath ?? ""}\n\t\t\t\t\t\t\t\t\tplaceholder="/bin/bash"\n\t\t\t\t\t\t\t\t\tonInput={(event: any) => setCachedStateField("terminalInlineShellPath", event.target.value)}\n\t\t\t\t\t\t\t\t\tstyle={{ width: "100%" }}\n\t\t\t\t\t\t\t\t\tdata-testid="terminal-inline-shell-path-input"\n\t\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t\t\t<div className="text-vscode-descriptionForeground text-sm mt-1">{t("settings:terminal.inlineShellPath.description")}</div>\n\t\t\t\t\t\t\t</SearchableSetting>\n\t\t\t\t\t\t)}\n\n\t\t\t\t\t\t{!(terminalShellIntegrationDisabled ?? true) && ('''
+              return s.replace(marker, field, 1)
+          edit("webview-ui/src/components/settings/TerminalSettings.tsx", terminal_ui)
 
-          # Settings page cache/save plumbing.
-          replace_once(
-              "webview-ui/src/components/settings/SettingsView.tsx",
-              '\t\tterminalShellIntegrationDisabled,\n\t\tterminalCommandDelay,',
-              '\t\tterminalShellIntegrationDisabled,\n\t\tterminalInlineShellPath,\n\t\tterminalCommandDelay,',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/SettingsView.tsx",
-              '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalCommandDelay,',
-              '\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath: terminalInlineShellPath?.trim() || undefined,\n\t\t\tterminalCommandDelay,',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/SettingsView.tsx",
-              '\t\t\t\tterminalShellIntegrationDisabled={terminalShellIntegrationDisabled}\n\t\t\t\tterminalCommandDelay={terminalCommandDelay}',
-              '\t\t\t\tterminalShellIntegrationDisabled={terminalShellIntegrationDisabled}\n\t\t\t\tterminalInlineShellPath={terminalInlineShellPath}\n\t\t\t\tterminalCommandDelay={terminalCommandDelay}',
-          )
+          p = Path("webview-ui/src/i18n/locales/en/settings.json")
+          data = json.loads(p.read_text())
+          if "inlineShellPath" in data["terminal"]: raise RuntimeError("translation already exists")
+          out = {}
+          for k,v in data["terminal"].items():
+              out[k]=v
+              if k == "shellIntegrationDisabled": out["inlineShellPath"]={"label":"Inline terminal shell path","description":"Shell executable used by the inline terminal. Leave empty to use the system default."}
+          data["terminal"] = out
+          p.write_text(json.dumps(data, ensure_ascii=False, indent="\t") + "\n")
 
-          # Terminal settings UI directly below Use Inline Terminal.
-          replace_once(
-              "webview-ui/src/components/settings/TerminalSettings.tsx",
-              'import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"',
-              'import { VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/TerminalSettings.tsx",
-              '\tterminalShellIntegrationDisabled?: boolean\n\tterminalCommandDelay?: number',
-              '\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n\tterminalCommandDelay?: number',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/TerminalSettings.tsx",
-              '\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalCommandDelay"',
-              '\t\t| "terminalShellIntegrationDisabled"\n\t\t| "terminalInlineShellPath"\n\t\t| "terminalCommandDelay"',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/TerminalSettings.tsx",
-              '\tterminalShellIntegrationDisabled,\n\tterminalCommandDelay,',
-              '\tterminalShellIntegrationDisabled,\n\tterminalInlineShellPath,\n\tterminalCommandDelay,',
-          )
-          replace_once(
-              "webview-ui/src/components/settings/TerminalSettings.tsx",
-              '''\t\t\t\t\t\t</SearchableSetting>\n\n\t\t\t\t\t\t{!terminalShellIntegrationDisabled && (''',
-              '''\t\t\t\t\t\t</SearchableSetting>\n\n\t\t\t\t\t\t{(terminalShellIntegrationDisabled ?? true) && (\n\t\t\t\t\t\t\t<SearchableSetting\n\t\t\t\t\t\t\t\tsettingId="terminal-inline-shell-path"\n\t\t\t\t\t\t\t\tsection="terminal"\n\t\t\t\t\t\t\t\tlabel={t("settings:terminal.inlineShellPath.label")}>\n\t\t\t\t\t\t\t\t<label className="block font-medium mb-1">\n\t\t\t\t\t\t\t\t\t{t("settings:terminal.inlineShellPath.label")}\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t\t<VSCodeTextField\n\t\t\t\t\t\t\t\t\tvalue={terminalInlineShellPath ?? ""}\n\t\t\t\t\t\t\t\t\tplaceholder="/bin/bash"\n\t\t\t\t\t\t\t\t\tonInput={(event: any) =>\n\t\t\t\t\t\t\t\t\t\tsetCachedStateField("terminalInlineShellPath", event.target.value)\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\tstyle={{ width: "100%" }}\n\t\t\t\t\t\t\t\t\tdata-testid="terminal-inline-shell-path-input"\n\t\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t\t\t<div className="text-vscode-descriptionForeground text-sm mt-1">\n\t\t\t\t\t\t\t\t\t{t("settings:terminal.inlineShellPath.description")}\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</SearchableSetting>\n\t\t\t\t\t\t)}\n\n\t\t\t\t\t\t{!(terminalShellIntegrationDisabled ?? true) && (''',
-          )
+          def system_info(s):
+              s=once(s,'export function getSystemInfoSection(cwd: string): string {','export function getSystemInfoSection(cwd: string, shell: string = getShell()): string {',"system info signature")
+              return once(s,'Default Shell: ${getShell()}','Default Shell: ${shell}',"system info shell")
+          edit("src/core/prompts/sections/system-info.ts", system_info)
+          edit("src/core/prompts/types.ts", lambda s: once(s,'\tnewTaskRequireTodos: boolean\n','\tnewTaskRequireTodos: boolean\n\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n',"prompt settings"))
 
-          # English strings; preserve the repository's tab-indented JSON formatting.
-          settings_path = Path("webview-ui/src/i18n/locales/en/settings.json")
-          data = json.loads(settings_path.read_text())
-          terminal = data["terminal"]
-          if "inlineShellPath" in terminal:
-              raise RuntimeError("inlineShellPath translation unexpectedly already exists")
-          # Insert after shellIntegrationDisabled while preserving key order.
-          rebuilt = {}
-          for key, value in terminal.items():
-              rebuilt[key] = value
-              if key == "shellIntegrationDisabled":
-                  rebuilt["inlineShellPath"] = {
-                      "label": "Inline terminal shell path",
-                      "description": "Shell executable used by the inline terminal. Leave empty to use the system default.",
-                  }
-          data["terminal"] = rebuilt
-          settings_path.write_text(json.dumps(data, ensure_ascii=False, indent="\t") + "\n")
+          def system_prompt(s):
+              s=once(s,'import { isEmpty } from "../../utils/object"','import { isEmpty } from "../../utils/object"\nimport { getEffectiveShell } from "../../utils/shell"',"effective shell import")
+              guard='\tif (!context) {\n\t\tthrow new Error("Extension context is required for generating system prompt")\n\t}\n'
+              # First guard belongs to generatePrompt; second to SYSTEM_PROMPT.
+              positions=[m.start() for m in re.finditer(re.escape(guard),s)]
+              if len(positions)!=2: raise RuntimeError(f"system context guards {len(positions)}")
+              add='\n\tconst effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)\n'
+              # Insert from the end so offsets remain valid.
+              for pos in reversed(positions):
+                  end=pos+len(guard); s=s[:end]+add+s[end:]
+              s=once(s,'${getSystemInfoSection(cwd)}','${getSystemInfoSection(cwd, effectiveShell)}',"system info call")
+              s=once(s,'\t\tshell: vscode.env.shell,','\t\tshell: effectiveShell,',"custom prompt shell")
+              return s
+          edit("src/core/prompts/system.ts", system_prompt)
 
-          # System prompt shell resolution.
-          replace_once(
-              "src/core/prompts/sections/system-info.ts",
-              'export function getSystemInfoSection(cwd: string): string {',
-              'export function getSystemInfoSection(cwd: string, shell: string = getShell()): string {',
-          )
-          replace_once(
-              "src/core/prompts/sections/system-info.ts",
-              'Default Shell: ${getShell()}',
-              'Default Shell: ${shell}',
-          )
-          replace_once(
-              "src/core/prompts/types.ts",
-              '\tnewTaskRequireTodos: boolean\n',
-              '\tnewTaskRequireTodos: boolean\n\tterminalShellIntegrationDisabled?: boolean\n\tterminalInlineShellPath?: string\n',
-          )
-          replace_once(
-              "src/core/prompts/system.ts",
-              'import { isEmpty } from "../../utils/object"',
-              'import { isEmpty } from "../../utils/object"\nimport { getEffectiveShell } from "../../utils/shell"',
-          )
-          replace_once(
-              "src/core/prompts/system.ts",
-              '''\tif (!context) {\n\t\tthrow new Error("Extension context is required for generating system prompt")\n\t}\n\n\t// If diff is disabled, don't pass the diffStrategy''',
-              '''\tif (!context) {\n\t\tthrow new Error("Extension context is required for generating system prompt")\n\t}\n\n\tconst effectiveShell = getEffectiveShell(\n\t\tsettings?.terminalShellIntegrationDisabled,\n\t\tsettings?.terminalInlineShellPath,\n\t)\n\n\t// If diff is disabled, don't pass the diffStrategy''',
-          )
-          replace_once(
-              "src/core/prompts/system.ts",
-              '${getSystemInfoSection(cwd)}',
-              '${getSystemInfoSection(cwd, effectiveShell)}',
-          )
-          # SYSTEM_PROMPT has a second context guard; compute the same value there for file-based custom prompts.
-          system_path = "src/core/prompts/system.ts"
-          text = read(system_path)
-          marker = '\t// Try to load custom system prompt from file\n'
-          if text.count(marker) != 1:
-              raise RuntimeError(f"{system_path}: custom prompt marker count != 1")
-          text = text.replace(
-              marker,
-              '\tconst effectiveShell = getEffectiveShell(\n\t\tsettings?.terminalShellIntegrationDisabled,\n\t\tsettings?.terminalInlineShellPath,\n\t)\n\n' + marker,
-              1,
-          )
-          if text.count('\t\tshell: vscode.env.shell,') != 1:
-              raise RuntimeError(f"{system_path}: expected one vscode.env.shell variable")
-          text = text.replace('\t\tshell: vscode.env.shell,', '\t\tshell: effectiveShell,', 1)
-          write(system_path, text)
+          def preview(s):
+              s=once(s,'\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,','\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,\n\t\tterminalShellIntegrationDisabled,\n\t\tterminalInlineShellPath,',"preview destructure")
+              needle='\t\t\ttoolProtocol,\n\t\t\tisStealthModel:'
+              repl='\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\ttoolProtocol,\n\t\t\tisStealthModel:'
+              return once(s,needle,repl,"preview settings")
+          edit("src/core/webview/generateSystemPrompt.ts", preview)
 
-          # Preview system prompt gets the two terminal settings.
-          replace_once(
-              "src/core/webview/generateSystemPrompt.ts",
-              '\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,',
-              '\t\tmaxConcurrentFileReads,\n\t\tenableSubfolderRules,\n\t\tterminalShellIntegrationDisabled,\n\t\tterminalInlineShellPath,',
-          )
-          replace_once(
-              "src/core/webview/generateSystemPrompt.ts",
-              '\t\t\tnewTaskRequireTodos: vscode.workspace\n\t\t\t\t.getConfiguration(Package.name)\n\t\t\t\t.get<boolean>("newTaskRequireTodos", false),\n\t\t\ttoolProtocol,',
-              '\t\t\tnewTaskRequireTodos: vscode.workspace\n\t\t\t\t.getConfiguration(Package.name)\n\t\t\t\t.get<boolean>("newTaskRequireTodos", false),\n\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\tterminalInlineShellPath,\n\t\t\ttoolProtocol,',
-          )
-
-          # Main task system prompt gets the same settings. Restrict edits to getSystemPrompt().
-          task_path = "src/core/task/Task.ts"
-          text = read(task_path)
-          start = text.find("\tprivate async getSystemPrompt(): Promise<string> {")
-          if start < 0:
-              raise RuntimeError("Task.ts: getSystemPrompt() not found")
-          end = text.find("\n\tprivate ", start + 1)
-          if end < 0:
-              raise RuntimeError("Task.ts: end of getSystemPrompt() not found")
-          segment = text[start:end]
-          if "terminalInlineShellPath" in segment:
-              raise RuntimeError("Task.ts: terminal shell settings unexpectedly already present")
-          api_marker = "\t\t\tapiConfiguration,\n"
-          if segment.count(api_marker) != 1:
-              raise RuntimeError(f"Task.ts: apiConfiguration marker count {segment.count(api_marker)}")
-          segment = segment.replace(
-              api_marker,
-              api_marker + "\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n",
-              1,
-          )
-          settings_marker = '\t\t\t\tnewTaskRequireTodos: vscode.workspace\n\t\t\t\t\t.getConfiguration(Package.name)\n\t\t\t\t\t.get<boolean>("newTaskRequireTodos", false),\n'
-          if segment.count(settings_marker) != 1:
-              raise RuntimeError(f"Task.ts: settings marker count {segment.count(settings_marker)}")
-          segment = segment.replace(
-              settings_marker,
-              settings_marker + "\t\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\t\tterminalInlineShellPath,\n",
-              1,
-          )
-          write(task_path, text[:start] + segment + text[end:])
-
-          print("Guarded source updates applied successfully")
+          def task_prompt(s):
+              start=s.find("\tprivate async getSystemPrompt(): Promise<string> {")
+              if start<0: raise RuntimeError("getSystemPrompt not found")
+              end=s.find("\n\tprivate ",start+1)
+              if end<0: raise RuntimeError("getSystemPrompt end not found")
+              seg=s[start:end]
+              seg=once(seg,'\t\t\tapiConfiguration,\n','\t\t\tapiConfiguration,\n\t\t\tterminalShellIntegrationDisabled,\n\t\t\tterminalInlineShellPath,\n',"task state")
+              needle='\t\t\t\ttoolProtocol,'
+              repl='\t\t\t\tterminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,\n\t\t\t\tterminalInlineShellPath,\n\t\t\t\ttoolProtocol,'
+              seg=once(seg,needle,repl,"task prompt settings")
+              return s[:start]+seg+s[end:]
+          edit("src/core/task/Task.ts", task_prompt)
+          print("all guarded edits applied")
           PY
-
       - name: Remove one-shot workflow
         run: git rm .github/workflows/apply-inline-terminal-shell-path.yml
-
-      - name: Commit changes
-        shell: bash
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
