@@ -876,6 +876,10 @@
 			"label": "Inline-Terminal verwenden (empfohlen)",
 			"description": "Führe Befehle im Inline-Terminal (Chat) aus, um Shell-Profile/Integration für schnellere, zuverlässigere Läufe zu umgehen. Wenn deaktiviert, nutzt Kilo das VS Code-Terminal mit deinem Shell-Profil, Prompts und Plugins. <0>Mehr erfahren</0>"
 		},
+		"inlineShellPath": {
+			"label": "Shell-Pfad für Inline-Terminal",
+			"description": "Shell-Programm, das vom Inline-Terminal verwendet wird. Leer lassen, um die Systemvorgabe zu verwenden."
+		},
 		"commandDelay": {
 			"label": "Terminal-Befehlsverzögerung",
 			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. <0>Mehr erfahren</0>"

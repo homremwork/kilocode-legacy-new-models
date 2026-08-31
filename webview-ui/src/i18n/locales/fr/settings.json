@@ -876,6 +876,10 @@
 			"label": "Utiliser le terminal en ligne (recommandé)",
 			"description": "Exécute des commandes dans le terminal en ligne (chat) pour contourner les profils/intégration du shell pour des exécutions plus rapides et fiables. Lorsque désactivé, Kilo utilise le terminal VS Code avec votre profil de shell, invites et plugins. <0>En savoir plus</0>"
 		},
+		"inlineShellPath": {
+			"label": "Chemin du shell du terminal intégré",
+			"description": "Exécutable du shell utilisé par le terminal intégré. Laissez vide pour utiliser la valeur par défaut du système."
+		},
 		"commandDelay": {
 			"label": "Délai de commande du terminal",
 			"description": "Ajoute une courte pause après chaque commande pour que le terminal VS Code puisse vider toute la sortie (bash/zsh : PROMPT_COMMAND sleep ; PowerShell : start-sleep). Utilisez uniquement si vous voyez une sortie de fin manquante ; sinon laissez à 0. <0>En savoir plus</0>"

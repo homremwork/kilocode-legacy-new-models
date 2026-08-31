@@ -877,6 +877,10 @@
 			"label": "Satır İçi Terminal Kullan (önerilir)",
 			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında Kilo, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
 		},
+		"inlineShellPath": {
+			"label": "Satır içi terminal kabuğu yolu",
+			"description": "Satır içi terminal tarafından kullanılan kabuk çalıştırılabilir dosyası. Sistem varsayılanını kullanmak için boş bırakın."
+		},
 		"commandDelay": {
 			"label": "Terminal komut delay",
 			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. <0>Daha fazla bilgi edinin</0>"

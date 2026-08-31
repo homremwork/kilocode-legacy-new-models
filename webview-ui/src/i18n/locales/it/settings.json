@@ -882,6 +882,10 @@
 			"label": "Usa terminale in linea (consigliato)",
 			"description": "Esegui comandi nel terminale in linea (chat) per bypassare profili/integrazione shell per esecuzioni più veloci e affidabili. Quando disabilitato, Kilo usa il terminale VS Code con il tuo profilo shell, prompt e plugin. <0>Scopri di più</0>"
 		},
+		"inlineShellPath": {
+			"label": "Percorso della shell del terminale inline",
+			"description": "Eseguibile della shell usato dal terminale inline. Lascia vuoto per usare il valore predefinito del sistema."
+		},
 		"commandDelay": {
 			"label": "Ritardo comando terminale",
 			"description": "Aggiunge una breve pausa dopo ogni comando affinché il terminale VS Code possa svuotare tutto l'output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa solo se vedi output finale mancante; altrimenti lascia a 0. <0>Scopri di più</0>"

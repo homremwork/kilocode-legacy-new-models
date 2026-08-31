@@ -877,6 +877,10 @@
 			"label": "使用内联终端（推荐）",
 			"description": "在内联终端（聊天）中运行命令以绕过 shell 配置文件/集成，实现更快、更可靠的运行。禁用时，Kilo 使用 VS Code 终端及您的 shell 配置文件、提示和插件。<0>了解更多</0>"
 		},
+		"inlineShellPath": {
+			"label": "内联终端 Shell 路径",
+			"description": "内联终端使用的 Shell 可执行文件。留空则使用系统默认值。"
+		},
 		"commandDelay": {
 			"label": "终端命令延迟",
 			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。<0>了解更多</0>"

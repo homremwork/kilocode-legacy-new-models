@@ -887,6 +887,10 @@
 			"label": "使用內嵌終端機（建議）",
 			"description": "在內嵌終端機（聊天）中執行命令以繞過 shell 設定檔/整合，實現更快、更可靠的執行。停用時，Kilo 使用 VS Code 終端機及您的 shell 設定檔、提示和外掛程式。<0>了解更多</0>"
 		},
+		"inlineShellPath": {
+			"label": "內嵌終端機 Shell 路徑",
+			"description": "內嵌終端機使用的 Shell 可執行檔。留空則使用系統預設值。"
+		},
 		"commandDelay": {
 			"label": "終端機命令延遲",
 			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。<0>了解更多</0>"

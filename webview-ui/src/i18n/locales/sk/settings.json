@@ -977,6 +977,10 @@
 			"label": "Zakázať integráciu shellu terminálu",
 			"description": "Povoľte túto možnosť, ak príkazy terminálu nefungujú správne alebo sa zobrazujú chyby „Integrácia shellu nie je k dispozícii“. Tým sa použije jednoduchšia metóda spúšťania príkazov, ktorá obíde niektoré pokročilé funkcie terminálu. <0>Dozvedieť sa viac</0>"
 		},
+		"inlineShellPath": {
+			"label": "Cesta k shellu vstavaného terminálu",
+			"description": "Spustiteľný súbor shellu používaný vstavaným terminálom. Ak chcete použiť predvolené nastavenie systému, ponechajte pole prázdne."
+		},
 		"commandDelay": {
 			"label": "Oneskorenie príkazu terminálu",
 			"description": "Oneskorenie v milisekundách, ktoré sa pridá po vykonaní príkazu. Predvolené nastavenie 0 oneskorenie úplne zakáže. To môže pomôcť zaistiť, že výstup príkazu bude plne zachytený v termináloch s problémami s časovaním. Vo väčšine terminálov sa to implementuje nastavením `PROMPT_COMMAND='sleep N'` a Powershell pripojí `start-sleep` na koniec každého príkazu. Pôvodne to bolo riešenie chyby VSCode#237208 a nemusí byť už potrebné. <0>Dozvedieť sa viac</0>"

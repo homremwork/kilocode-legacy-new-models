@@ -877,6 +877,10 @@
 			"label": "Inline Terminal gebruiken (aanbevolen)",
 			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Kilo de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
 		},
+		"inlineShellPath": {
+			"label": "Shellpad voor inline-terminal",
+			"description": "Shell-uitvoerbaar bestand dat door de inline-terminal wordt gebruikt. Laat leeg om de systeemstandaard te gebruiken."
+		},
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
 			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. <0>Meer informatie</0>"
