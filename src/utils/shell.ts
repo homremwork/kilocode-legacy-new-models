@@ -368,3 +368,30 @@ export function getShell(): string {
 
 	return shell
 }
+
+/**
+ * Returns the shell that execute_command will actually use for the selected
+ * terminal backend.
+ *
+ * Inline Terminal uses Execa with `shell: true` unless a shell path is
+ * explicitly configured. Node resolves `shell: true` to /bin/sh on Unix and
+ * ComSpec on Windows.
+ */
+export function getEffectiveShell(
+	terminalShellIntegrationDisabled?: boolean,
+	terminalInlineShellPath?: string,
+): string {
+	if (terminalShellIntegrationDisabled === true) {
+		const inlineShellPath = terminalInlineShellPath?.trim()
+
+		if (inlineShellPath) {
+			return inlineShellPath
+		}
+
+		return process.platform === "win32"
+			? process.env.ComSpec || process.env.COMSPEC || "cmd.exe"
+			: "/bin/sh"
+	}
+
+	return getShell()
+}
