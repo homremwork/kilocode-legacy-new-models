@@ -81,7 +81,10 @@ async function generatePrompt(
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	const effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)
+	const effectiveShell = getEffectiveShell(
+		settings?.terminalShellIntegrationDisabled,
+		settings?.terminalInlineShellPath,
+	)
 
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
@@ -210,7 +213,10 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	const effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)
+	const effectiveShell = getEffectiveShell(
+		settings?.terminalShellIntegrationDisabled,
+		settings?.terminalInlineShellPath,
+	)
 
 	const mode =
 		getModeBySlug(inputMode, customModes)?.slug || modes.find((m) => m.slug === inputMode)?.slug || defaultModeSlug // kilocode_change: don't try to use non-existent modes

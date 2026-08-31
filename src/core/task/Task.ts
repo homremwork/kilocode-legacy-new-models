@@ -4228,8 +4228,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
 					terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
-				terminalInlineShellPath,
-				toolProtocol,
+					terminalInlineShellPath,
+					toolProtocol,
 					isStealthModel: modelInfo?.isStealthModel,
 				},
 				undefined, // todoList

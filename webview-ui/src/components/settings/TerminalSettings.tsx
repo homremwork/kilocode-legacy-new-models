@@ -238,10 +238,25 @@ export const TerminalSettings = ({
 						</SearchableSetting>
 
 						{(terminalShellIntegrationDisabled ?? true) && (
-							<SearchableSetting settingId="terminal-inline-shell-path" section="terminal" label={t("settings:terminal.inlineShellPath.label")}>
-								<label className="block font-medium mb-1">{t("settings:terminal.inlineShellPath.label")}</label>
-								<VSCodeTextField value={terminalInlineShellPath ?? ""} placeholder="/bin/bash" onInput={(event: any) => setCachedStateField("terminalInlineShellPath", event.target.value)} style={{ width: "100%" }} data-testid="terminal-inline-shell-path-input" />
-								<div className="text-vscode-descriptionForeground text-sm mt-1">{t("settings:terminal.inlineShellPath.description")}</div>
+							<SearchableSetting
+								settingId="terminal-inline-shell-path"
+								section="terminal"
+								label={t("settings:terminal.inlineShellPath.label")}>
+								<label className="block font-medium mb-1">
+									{t("settings:terminal.inlineShellPath.label")}
+								</label>
+								<VSCodeTextField
+									value={terminalInlineShellPath ?? ""}
+									placeholder="/bin/bash"
+									onInput={(event: any) =>
+										setCachedStateField("terminalInlineShellPath", event.target.value)
+									}
+									style={{ width: "100%" }}
+									data-testid="terminal-inline-shell-path-input"
+								/>
+								<div className="text-vscode-descriptionForeground text-sm mt-1">
+									{t("settings:terminal.inlineShellPath.description")}
+								</div>
 							</SearchableSetting>
 						)}
 

@@ -388,9 +388,7 @@ export function getEffectiveShell(
 			return inlineShellPath
 		}
 
-		return process.platform === "win32"
-			? process.env.ComSpec || process.env.COMSPEC || "cmd.exe"
-			: "/bin/sh"
+		return process.platform === "win32" ? process.env.ComSpec || process.env.COMSPEC || "cmd.exe" : "/bin/sh"
 	}
 
 	return getShell()
