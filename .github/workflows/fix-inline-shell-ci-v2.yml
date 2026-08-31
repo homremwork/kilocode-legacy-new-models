@@ -1,0 +1,128 @@
+name: Fix Inline Shell CI v2
+
+on:
+  push:
+    branches: [feature/inline-terminal-shell-path]
+    paths: [.github/workflows/fix-inline-shell-ci-v2.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/inline-terminal-shell-path
+
+      - name: Apply guarded test and translation fixes
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("fs")
+
+          const mockOld = 'vi.mock("../../../utils/shell", () => ({\n\tgetShell: () => "/bin/zsh",\n}))'
+          const mockNew = 'vi.mock("../../../utils/shell", () => ({\n\tgetShell: () => "/bin/zsh",\n\tgetEffectiveShell: () => "/bin/zsh",\n}))'
+          for (const path of [
+            "src/core/prompts/__tests__/add-custom-instructions.spec.ts",
+            "src/core/prompts/__tests__/system-prompt.spec.ts",
+          ]) {
+            const source = fs.readFileSync(path, "utf8")
+            const count = source.split(mockOld).length - 1
+            if (count !== 1) throw new Error(`${path}: expected one utils/shell mock, got ${count}`)
+            fs.writeFileSync(path, source.replace(mockOld, mockNew))
+          }
+
+          const translations = {
+            ar: ["مسار صدفة الطرفية المضمنة", "ملف الصدفة التنفيذي المستخدم بواسطة الطرفية المضمنة. اتركه فارغًا لاستخدام الإعداد الافتراضي للنظام."],
+            ca: ["Camí de l'intèrpret d'ordres del terminal integrat", "Executable de l'intèrpret d'ordres utilitzat pel terminal integrat. Deixa-ho buit per utilitzar el valor predeterminat del sistema."],
+            cs: ["Cesta k shellu integrovaného terminálu", "Spustitelný soubor shellu používaný integrovaným terminálem. Ponechte prázdné pro použití výchozího nastavení systému."],
+            de: ["Shell-Pfad für Inline-Terminal", "Shell-Programm, das vom Inline-Terminal verwendet wird. Leer lassen, um die Systemvorgabe zu verwenden."],
+            es: ["Ruta del shell del terminal integrado", "Ejecutable del shell que usa el terminal integrado. Déjalo vacío para usar el valor predeterminado del sistema."],
+            fr: ["Chemin du shell du terminal intégré", "Exécutable du shell utilisé par le terminal intégré. Laissez vide pour utiliser la valeur par défaut du système."],
+            hi: ["इनलाइन टर्मिनल शेल पथ", "इनलाइन टर्मिनल द्वारा उपयोग किया जाने वाला शेल एक्ज़ीक्यूटेबल। सिस्टम डिफ़ॉल्ट का उपयोग करने के लिए इसे खाली छोड़ें।"],
+            id: ["Path shell terminal inline", "Executable shell yang digunakan oleh terminal inline. Biarkan kosong untuk menggunakan default sistem."],
+            it: ["Percorso della shell del terminale inline", "Eseguibile della shell usato dal terminale inline. Lascia vuoto per usare il valore predefinito del sistema."],
+            ja: ["インラインターミナルのシェルパス", "インラインターミナルで使用するシェル実行ファイルです。空欄の場合はシステム既定値を使用します。"],
+            ko: ["인라인 터미널 셸 경로", "인라인 터미널에서 사용할 셸 실행 파일입니다. 비워 두면 시스템 기본값을 사용합니다."],
+            nl: ["Shellpad voor inline-terminal", "Shell-uitvoerbaar bestand dat door de inline-terminal wordt gebruikt. Laat leeg om de systeemstandaard te gebruiken."],
+            pl: ["Ścieżka powłoki terminala wbudowanego", "Plik wykonywalny powłoki używany przez terminal wbudowany. Pozostaw puste, aby użyć ustawienia domyślnego systemu."],
+            "pt-BR": ["Caminho do shell do terminal inline", "Executável do shell usado pelo terminal inline. Deixe em branco para usar o padrão do sistema."],
+            ru: ["Путь к оболочке встроенного терминала", "Исполняемый файл оболочки для встроенного терминала. Оставьте пустым, чтобы использовать системное значение по умолчанию."],
+            sk: ["Cesta k shellu vstavaného terminálu", "Spustiteľný súbor shellu používaný vstavaným terminálom. Ak chcete použiť predvolené nastavenie systému, ponechajte pole prázdne."],
+            th: ["พาธเชลล์ของเทอร์มินัลแบบอินไลน์", "ไฟล์เชลล์ที่เทอร์มินัลแบบอินไลน์ใช้ ปล่อยว่างเพื่อใช้ค่าเริ่มต้นของระบบ"],
+            tr: ["Satır içi terminal kabuğu yolu", "Satır içi terminal tarafından kullanılan kabuk çalıştırılabilir dosyası. Sistem varsayılanını kullanmak için boş bırakın."],
+            uk: ["Шлях до оболонки вбудованого термінала", "Виконуваний файл оболонки для вбудованого термінала. Залиште порожнім, щоб використовувати системне значення за замовчуванням."],
+            vi: ["Đường dẫn shell của terminal nội tuyến", "Tệp thực thi shell được terminal nội tuyến sử dụng. Để trống để dùng mặc định của hệ thống."],
+            "zh-CN": ["内联终端 Shell 路径", "内联终端使用的 Shell 可执行文件。留空则使用系统默认值。"],
+            "zh-TW": ["內嵌終端機 Shell 路徑", "內嵌終端機使用的 Shell 可執行檔。留空則使用系統預設值。"],
+          }
+
+          function findObjectEnd(source, openBrace) {
+            let depth = 0, inString = false, escaped = false
+            for (let i = openBrace; i < source.length; i++) {
+              const ch = source[i]
+              if (inString) {
+                if (escaped) escaped = false
+                else if (ch === "\\") escaped = true
+                else if (ch === '"') inString = false
+                continue
+              }
+              if (ch === '"') inString = true
+              else if (ch === "{") depth++
+              else if (ch === "}" && --depth === 0) return i
+            }
+            throw new Error("Unterminated JSON object")
+          }
+
+          for (const [locale, [label, description]] of Object.entries(translations)) {
+            const path = `webview-ui/src/i18n/locales/${locale}/settings.json`
+            let source = fs.readFileSync(path, "utf8")
+            const parsed = JSON.parse(source)
+            if (!parsed.terminal || typeof parsed.terminal.shellIntegrationDisabled !== "object") {
+              throw new Error(`${locale}: terminal.shellIntegrationDisabled object missing`)
+            }
+            if (parsed.terminal.inlineShellPath !== undefined) throw new Error(`${locale}: inlineShellPath already exists`)
+
+            const anchor = '\t\t"shellIntegrationDisabled": {'
+            const first = source.indexOf(anchor)
+            if (first < 0 || source.indexOf(anchor, first + 1) >= 0) throw new Error(`${locale}: shellIntegrationDisabled anchor mismatch`)
+            const openBrace = source.indexOf("{", first)
+            const closeBrace = findObjectEnd(source, openBrace)
+            let comma = closeBrace + 1
+            while (/\s/.test(source[comma])) comma++
+            if (source[comma] !== ",") throw new Error(`${locale}: shellIntegrationDisabled missing trailing comma`)
+
+            const addition = `\n\t\t"inlineShellPath": {\n\t\t\t"label": ${JSON.stringify(label)},\n\t\t\t"description": ${JSON.stringify(description)}\n\t\t},`
+            source = source.slice(0, comma + 1) + addition + source.slice(comma + 1)
+            const checked = JSON.parse(source)
+            if (checked.terminal.inlineShellPath?.label !== label || checked.terminal.inlineShellPath?.description !== description) {
+              throw new Error(`${locale}: inserted translation failed validation`)
+            }
+            fs.writeFileSync(path, source)
+          }
+
+          const locales = fs.readdirSync("webview-ui/src/i18n/locales").filter((name) => name !== "en")
+          if (locales.length !== 22) throw new Error(`Expected 22 non-English locales, found ${locales.length}`)
+          for (const locale of locales) {
+            const data = JSON.parse(fs.readFileSync(`webview-ui/src/i18n/locales/${locale}/settings.json`, "utf8"))
+            if (!data.terminal?.inlineShellPath?.label || !data.terminal?.inlineShellPath?.description) {
+              throw new Error(`${locale}: inlineShellPath translation missing after patch`)
+            }
+          }
+          console.log("Updated two prompt mocks and all 22 non-English locales")
+          NODE
+
+          git diff --check
+
+      - name: Commit and push fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/core/prompts/__tests__/add-custom-instructions.spec.ts \
+                  src/core/prompts/__tests__/system-prompt.spec.ts \
+                  webview-ui/src/i18n/locales/*/settings.json
+          git commit -m "fix: update inline shell translations and prompt mocks"
+          git push origin HEAD:feature/inline-terminal-shell-path
