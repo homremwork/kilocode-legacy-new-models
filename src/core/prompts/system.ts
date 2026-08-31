@@ -17,6 +17,7 @@ import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelec
 import { DiffStrategy } from "../../shared/tools"
 import { formatLanguage } from "../../shared/language"
 import { isEmpty } from "../../utils/object"
+import { getEffectiveShell } from "../../utils/shell"
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
@@ -79,6 +80,8 @@ async function generatePrompt(
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
+
+	const effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)
 
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
@@ -158,7 +161,7 @@ ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}
 ${getRulesSection(cwd, settings, clineProviderState /* kilocode_change */)}
 
-${getSystemInfoSection(cwd)}
+${getSystemInfoSection(cwd, effectiveShell)}
 
 ${getObjectiveSection()}
 
@@ -207,6 +210,8 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
+	const effectiveShell = getEffectiveShell(settings?.terminalShellIntegrationDisabled, settings?.terminalInlineShellPath)
+
 	const mode =
 		getModeBySlug(inputMode, customModes)?.slug || modes.find((m) => m.slug === inputMode)?.slug || defaultModeSlug // kilocode_change: don't try to use non-existent modes
 
@@ -215,7 +220,7 @@ export const SYSTEM_PROMPT = async (
 		workspace: cwd,
 		mode: mode,
 		language: language ?? formatLanguage(vscode.env.language),
-		shell: vscode.env.shell,
+		shell: effectiveShell,
 		operatingSystem: os.type(),
 	}
 	const fileCustomSystemPrompt = await loadSystemPromptFile(cwd, mode, variablesForPrompt)

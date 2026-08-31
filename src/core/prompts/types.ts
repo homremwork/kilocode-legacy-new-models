@@ -11,6 +11,8 @@ export interface SystemPromptSettings {
 	/** When true, recursively discover and load .roo/rules from subdirectories */
 	enableSubfolderRules?: boolean
 	newTaskRequireTodos: boolean
+	terminalShellIntegrationDisabled?: boolean
+	terminalInlineShellPath?: string
 	toolProtocol?: ToolProtocol
 	/** When true, model should hide vendor/company identity in responses */
 	isStealthModel?: boolean

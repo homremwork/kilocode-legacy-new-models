@@ -1,7 +1,7 @@
 import { HTMLAttributes, useState, useCallback } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
-import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useEvent, useMount } from "react-use"
@@ -22,6 +22,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalOutputCharacterLimit?: number
 	terminalShellIntegrationTimeout?: number
 	terminalShellIntegrationDisabled?: boolean
+	terminalInlineShellPath?: string
 	terminalCommandDelay?: number
 	terminalPowershellCounter?: boolean
 	terminalZshClearEolMark?: boolean
@@ -35,6 +36,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalOutputCharacterLimit"
 		| "terminalShellIntegrationTimeout"
 		| "terminalShellIntegrationDisabled"
+		| "terminalInlineShellPath"
 		| "terminalCommandDelay"
 		| "terminalPowershellCounter"
 		| "terminalZshClearEolMark"
@@ -51,6 +53,7 @@ export const TerminalSettings = ({
 	terminalOutputCharacterLimit,
 	terminalShellIntegrationTimeout,
 	terminalShellIntegrationDisabled,
+	terminalInlineShellPath,
 	terminalCommandDelay,
 	terminalPowershellCounter,
 	terminalZshClearEolMark,
@@ -234,7 +237,15 @@ export const TerminalSettings = ({
 							</div>
 						</SearchableSetting>
 
-						{!terminalShellIntegrationDisabled && (
+						{(terminalShellIntegrationDisabled ?? true) && (
+							<SearchableSetting settingId="terminal-inline-shell-path" section="terminal" label={t("settings:terminal.inlineShellPath.label")}>
+								<label className="block font-medium mb-1">{t("settings:terminal.inlineShellPath.label")}</label>
+								<VSCodeTextField value={terminalInlineShellPath ?? ""} placeholder="/bin/bash" onInput={(event: any) => setCachedStateField("terminalInlineShellPath", event.target.value)} style={{ width: "100%" }} data-testid="terminal-inline-shell-path-input" />
+								<div className="text-vscode-descriptionForeground text-sm mt-1">{t("settings:terminal.inlineShellPath.description")}</div>
+							</SearchableSetting>
+						)}
+
+						{!(terminalShellIntegrationDisabled ?? true) && (
 							<>
 								<SearchableSetting
 									settingId="terminal-inherit-env"
