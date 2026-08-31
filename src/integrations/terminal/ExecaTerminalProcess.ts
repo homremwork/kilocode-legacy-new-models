@@ -27,7 +27,10 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 	private subprocess?: ReturnType<typeof execa>
 	private pidUpdatePromise?: Promise<void>
 
-	constructor(terminal: RooTerminal) {
+	constructor(
+		terminal: RooTerminal,
+		private readonly shellPath?: string,
+	) {
 		super()
 
 		this.terminalRef = new WeakRef(terminal)
@@ -54,7 +57,7 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			this.isHot = true
 
 			this.subprocess = execa({
-				shell: true,
+				shell: this.shellPath || true,
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				// Ignore stdin to ensure non-interactive mode and prevent hanging
