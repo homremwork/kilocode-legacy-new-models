@@ -211,6 +211,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 		terminalOutputCharacterLimit,
 		terminalShellIntegrationTimeout,
 		terminalShellIntegrationDisabled, // Added from upstream
+		terminalInlineShellPath,
 		terminalCommandDelay,
 		terminalPowershellCounter,
 		terminalZshClearEolMark,
@@ -571,6 +572,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 					terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
 					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
 					terminalShellIntegrationDisabled,
+					terminalInlineShellPath: terminalInlineShellPath?.trim() || undefined,
 					terminalCommandDelay,
 					terminalPowershellCounter,
 					terminalZshClearEolMark,
@@ -1237,6 +1239,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>((props, ref)
 								terminalOutputCharacterLimit={terminalOutputCharacterLimit}
 								terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
 								terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
+								terminalInlineShellPath={terminalInlineShellPath}
 								terminalCommandDelay={terminalCommandDelay}
 								terminalPowershellCounter={terminalPowershellCounter}
 								terminalZshClearEolMark={terminalZshClearEolMark}

@@ -190,6 +190,7 @@ export const globalSettingsSchema = z.object({
 	terminalOutputCharacterLimit: z.number().optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
 	terminalShellIntegrationDisabled: z.boolean().optional(),
+	terminalInlineShellPath: z.string().optional(),
 	terminalCommandDelay: z.number().optional(),
 	terminalPowershellCounter: z.boolean().optional(),
 	terminalZshClearEolMark: z.boolean().optional(),

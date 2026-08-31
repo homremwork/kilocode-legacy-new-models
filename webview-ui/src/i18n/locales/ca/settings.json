@@ -876,6 +876,10 @@
 			"label": "Utilitza terminal en línia (recomanat)",
 			"description": "Executa comandes al terminal en línia (xat) per evitar perfils/integració del shell per a execucions més ràpides i fiables. Quan està desactivat, Kilo usa el terminal de VS Code amb el teu perfil de shell, prompts i connectors. <0>Aprèn-ne més</0>"
 		},
+		"inlineShellPath": {
+			"label": "Camí de l'intèrpret d'ordres del terminal integrat",
+			"description": "Executable de l'intèrpret d'ordres utilitzat pel terminal integrat. Deixa-ho buit per utilitzar el valor predeterminat del sistema."
+		},
 		"commandDelay": {
 			"label": "Retard de comanda del terminal",
 			"description": "Afegeix una pausa breu després de cada comanda perquè el terminal de VS Code pugui buidar tota la sortida (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa només si veus que falta sortida final; altrament deixa a 0. <0>Aprèn-ne més</0>"

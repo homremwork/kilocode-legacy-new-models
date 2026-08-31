@@ -877,6 +877,10 @@
 			"label": "Użyj terminala wbudowanego (zalecane)",
 			"description": "Uruchamiaj polecenia w terminalu wbudowanym (czat), aby ominąć profile/integrację powłoki dla szybszych, bardziej niezawodnych uruchomień. Gdy wyłączony, Kilo Code używa terminala VS Code z twoim profilem powłoki, monitami i wtyczkami. <0>Dowiedz się więcej</0>"
 		},
+		"inlineShellPath": {
+			"label": "Ścieżka powłoki terminala wbudowanego",
+			"description": "Plik wykonywalny powłoki używany przez terminal wbudowany. Pozostaw puste, aby użyć ustawienia domyślnego systemu."
+		},
 		"commandDelay": {
 			"label": "Opóźnienie polecenia terminala",
 			"description": "Dodaje krótką pauzę po każdym poleceniu, aby terminal VS Code mógł opróżnić całe wyjście (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Używaj tylko gdy widzisz brakujące wyjście końcowe; w przeciwnym razie zostaw na 0. <0>Dowiedz się więcej</0>"

@@ -877,6 +877,10 @@
 			"label": "Sử dụng Terminal nội tuyến (được khuyến nghị)",
 			"description": "Chạy lệnh trong Terminal nội tuyến (trò chuyện) để bỏ qua hồ sơ/tích hợp shell để chạy nhanh hơn, đáng tin cậy hơn. Khi bị tắt, Kilo sử dụng terminal VS Code với hồ sơ shell, lời nhắc và plugin của bạn. <0>Tìm hiểu thêm</0>"
 		},
+		"inlineShellPath": {
+			"label": "Đường dẫn shell của terminal nội tuyến",
+			"description": "Tệp thực thi shell được terminal nội tuyến sử dụng. Để trống để dùng mặc định của hệ thống."
+		},
 		"commandDelay": {
 			"label": "Delay lệnh terminal",
 			"description": "Thêm khoảng dừng ngắn sau mỗi lệnh để VS Code terminal flush tất cả output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Chỉ dùng nếu thiếu tail output; nếu không để ở 0. <0>Tìm hiểu thêm</0>"

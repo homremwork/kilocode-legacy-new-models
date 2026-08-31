@@ -15,6 +15,7 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { ExecaTerminal } from "../../integrations/terminal/ExecaTerminal"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
@@ -73,6 +74,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				terminalOutputLineLimit = 500,
 				terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 				terminalShellIntegrationDisabled = true,
+				terminalInlineShellPath,
 			} = providerState ?? {}
 
 			// Get command execution timeout from VSCode configuration (in seconds)
@@ -98,6 +100,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				command: unescapedCommand,
 				customCwd,
 				terminalShellIntegrationDisabled,
+				terminalInlineShellPath,
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
@@ -155,6 +158,7 @@ export type ExecuteCommandOptions = {
 	command: string
 	customCwd?: string
 	terminalShellIntegrationDisabled?: boolean
+	terminalInlineShellPath?: string
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
@@ -167,6 +171,7 @@ export async function executeCommandInTerminal(
 		command,
 		customCwd,
 		terminalShellIntegrationDisabled = true,
+		terminalInlineShellPath,
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
@@ -261,6 +266,10 @@ export async function executeCommandInTerminal(
 	}
 
 	const terminal = await TerminalRegistry.getOrCreateTerminal(workingDir, task.taskId, terminalProvider)
+
+	if (terminal instanceof ExecaTerminal) {
+		terminal.setShellPath(terminalInlineShellPath)
+	}
 
 	if (terminal instanceof Terminal) {
 		terminal.terminal.show(true)

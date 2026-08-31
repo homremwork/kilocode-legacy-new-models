@@ -4169,6 +4169,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			maxConcurrentFileReads,
 			maxReadFileLine,
 			apiConfiguration,
+			terminalShellIntegrationDisabled,
+			terminalInlineShellPath,
 			enableSubfolderRules,
 		} = state ?? {}
 
@@ -4225,6 +4227,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
+					terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
+					terminalInlineShellPath,
 					toolProtocol,
 					isStealthModel: modelInfo?.isStealthModel,
 				},

@@ -29,6 +29,8 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		maxReadFileLine,
 		maxConcurrentFileReads,
 		enableSubfolderRules,
+		terminalShellIntegrationDisabled,
+		terminalInlineShellPath,
 	} = await provider.getState()
 
 	// Check experiment to determine which diff strategy to use
@@ -99,6 +101,8 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
+			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
+			terminalInlineShellPath,
 			toolProtocol,
 			isStealthModel: modelInfo?.isStealthModel,
 		},
