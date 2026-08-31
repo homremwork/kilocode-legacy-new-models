@@ -4,6 +4,8 @@ import { ExecaTerminalProcess } from "./ExecaTerminalProcess"
 import { mergePromise } from "./mergePromise"
 
 export class ExecaTerminal extends BaseTerminal {
+	private shellPath?: string
+
 	constructor(id: number, cwd: string) {
 		super("execa", id, cwd)
 	}
@@ -15,10 +17,14 @@ export class ExecaTerminal extends BaseTerminal {
 		return false
 	}
 
+	public setShellPath(shellPath?: string): void {
+		this.shellPath = shellPath?.trim() || undefined
+	}
+
 	public override runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise {
 		this.busy = true
 
-		const process = new ExecaTerminalProcess(this)
+		const process = new ExecaTerminalProcess(this, this.shellPath)
 		process.command = command
 		this.process = process
 
