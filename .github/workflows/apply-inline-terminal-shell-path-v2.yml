@@ -17,8 +17,8 @@ jobs:
           ref: feature/inline-terminal-shell-path
       - name: Apply guarded source updates
         run: python3 .github/scripts/apply-inline-terminal-shell-path.py
-      - name: Remove one-shot helpers
-        run: git rm .github/workflows/apply-inline-terminal-shell-path.yml .github/workflows/apply-inline-terminal-shell-path-v2.yml .github/workflows/fix-inline-shell-patcher-anchor.yml .github/scripts/apply-inline-terminal-shell-path.py 2>/dev/null || true
+      - name: Remove temporary patch script
+        run: git rm .github/scripts/apply-inline-terminal-shell-path.py
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
