@@ -1,5 +1,15 @@
 ## 5.17.1
 
+## 5.19.0
+
+### Minor Changes
+
+- [`423b58f`](https://github.com/Kilo-Org/kilocode-legacy/commit/423b58f6ff1247c74d8e07ab419b6800082885c6) Thanks [@homremwork](https://github.com/homremwork)! - Add a configurable shell executable for the inline terminal, and use the effective inline-terminal shell consistently in command execution and system-prompt shell reporting.
+
+### Patch Changes
+
+- [`7d7bc7b`](https://github.com/Kilo-Org/kilocode-legacy/commit/7d7bc7b99b44867f4fadda206e5fcf851e6ea87e) Thanks [@homremwork](https://github.com/homremwork)! - Improve terminal progress output compression for carriage returns and backspaces.
+
 ## 5.18.0
 
 ### Minor Changes
