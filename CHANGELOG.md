@@ -1,5 +1,11 @@
 ## 5.17.1
 
+## 5.19.1
+
+### Patch Changes
+
+- [`1ce3f97`](https://github.com/Kilo-Org/kilocode-legacy/commit/1ce3f97dd79564eaf552cb016313bbf7c3afb7da) Thanks [@homremwork](https://github.com/homremwork)! - Add GPT-6 Astra support to the OpenAI Codex provider with a 372,000-token context window.
+
 ## 5.19.0
 
 ### Minor Changes
