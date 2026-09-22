@@ -33,7 +33,7 @@ describe("OpenAiCodexHandler.getModel", () => {
 		const model = new OpenAiCodexHandler({ apiModelId }).getModel()
 
 		expect(model.id).toBe(apiModelId)
-		expect(model.info.contextWindow).toBe(272000)
+		expect(model.info.contextWindow).toBe(372000)
 		expect(model.info.maxTokens).toBe(128000)
 		expect(model.info.supportsNativeTools).toBe(true)
 		expect(model.info.defaultToolProtocol).toBe("native")

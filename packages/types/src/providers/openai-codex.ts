@@ -26,7 +26,7 @@ export const openAiCodexDefaultModelId: OpenAiCodexModelId = "gpt-5.5"
 export const openAiCodexModels = {
 	"gpt-6-astra": {
 		maxTokens: 128000,
-		contextWindow: 272000,
+		contextWindow: 372000,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
@@ -39,11 +39,11 @@ export const openAiCodexModels = {
 		outputPrice: 0,
 		supportsVerbosity: true,
 		supportsTemperature: false,
-		description: "GPT-6 Astra: Frontier model for complex, demanding work via ChatGPT subscription",
+		description: "GPT-6 Astra: OpenAI's most capable model for complex, demanding work via ChatGPT subscription",
 	},
 	"gpt-6-sol": {
 		maxTokens: 128000,
-		contextWindow: 272000,
+		contextWindow: 372000,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
@@ -60,7 +60,7 @@ export const openAiCodexModels = {
 	},
 	"gpt-6-luna": {
 		maxTokens: 128000,
-		contextWindow: 272000,
+		contextWindow: 372000,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
