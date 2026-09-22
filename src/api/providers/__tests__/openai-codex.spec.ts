@@ -4,6 +4,9 @@ import { OpenAiCodexHandler } from "../openai-codex"
 
 describe("OpenAiCodexHandler.getModel", () => {
 	it.each([
+		["gpt-6-astra", "low"],
+		["gpt-6-sol", "medium"],
+		["gpt-6-luna", "medium"],
 		["gpt-5.5", "medium"],
 		["gpt-5.1", "medium"],
 		["gpt-5", "medium"],
@@ -20,6 +23,27 @@ describe("OpenAiCodexHandler.getModel", () => {
 		expect(model.id).toBe(apiModelId)
 		expect(model.info).toBeDefined()
 		expect(model.info.reasoningEffort).toBe(reasoningEffort)
+	})
+
+	it.each([
+		["gpt-6-astra", ["low", "medium", "high", "xhigh", "max", "ultra"]],
+		["gpt-6-sol", ["low", "medium", "high", "xhigh", "max", "ultra"]],
+		["gpt-6-luna", ["low", "medium", "high", "xhigh", "max"]],
+	])("should expose the GPT-6 Codex capabilities: %s", (apiModelId, supportedEfforts) => {
+		const model = new OpenAiCodexHandler({ apiModelId }).getModel()
+
+		expect(model.id).toBe(apiModelId)
+		expect(model.info.contextWindow).toBe(272000)
+		expect(model.info.maxTokens).toBe(128000)
+		expect(model.info.supportsNativeTools).toBe(true)
+		expect(model.info.defaultToolProtocol).toBe("native")
+		expect(model.info.includedTools).toEqual(["apply_patch"])
+		expect(model.info.excludedTools).toEqual(["apply_diff", "write_to_file"])
+		expect(model.info.supportsImages).toBe(true)
+		expect(model.info.supportsPromptCache).toBe(true)
+		expect(model.info.supportsVerbosity).toBe(true)
+		expect(model.info.supportsTemperature).toBe(false)
+		expect(model.info.supportsReasoningEffort).toEqual(supportedEfforts)
 	})
 
 	it("should expose the GPT-5.6 Codex capabilities", () => {
