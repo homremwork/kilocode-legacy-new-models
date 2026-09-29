@@ -4,6 +4,9 @@ import { OpenAiCodexHandler } from "../openai-codex"
 
 describe("OpenAiCodexHandler.getModel", () => {
 	it.each([
+		// kilocode_change start
+		["gpt-6.1-sol", "low"],
+		// kilocode_change end
 		["gpt-6-astra", "low"],
 		["gpt-6-sol", "medium"],
 		["gpt-6-luna", "medium"],
@@ -26,6 +29,9 @@ describe("OpenAiCodexHandler.getModel", () => {
 	})
 
 	it.each([
+		// kilocode_change start
+		["gpt-6.1-sol", ["low", "medium", "high", "xhigh", "max", "ultra"]],
+		// kilocode_change end
 		["gpt-6-astra", ["low", "medium", "high", "xhigh", "max", "ultra"]],
 		["gpt-6-sol", ["low", "medium", "high", "xhigh", "max", "ultra"]],
 		["gpt-6-luna", ["low", "medium", "high", "xhigh", "max"]],
