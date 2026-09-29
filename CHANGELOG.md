@@ -1,5 +1,11 @@
 ## 5.17.1
 
+## 5.19.3
+
+### Patch Changes
+
+- [`5b941fa`](https://github.com/Kilo-Org/kilocode-legacy/commit/5b941fa90cc8f08276cf228e66924fab0176d942) Thanks [@homremwork](https://github.com/homremwork)! - Add GPT-6.1 Sol support to the OpenAI Codex provider.
+
 ## 5.19.2
 
 ### Patch Changes
