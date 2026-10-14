@@ -1,5 +1,11 @@
 ## 5.17.1
 
+## 5.19.4
+
+### Patch Changes
+
+- [`1f6d15f`](https://github.com/Kilo-Org/kilocode-legacy/commit/1f6d15f8e08b743bde0d94c7621aa2e090d4f0da) Thanks [@homremwork](https://github.com/homremwork)! - Increase GPT-6.1 Sol context window to 500,000 tokens in the OpenAI Codex provider.
+
 ## 5.19.3
 
 ### Patch Changes
