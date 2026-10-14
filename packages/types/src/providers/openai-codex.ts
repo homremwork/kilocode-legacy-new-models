@@ -27,7 +27,7 @@ export const openAiCodexModels = {
 	// kilocode_change start
 	"gpt-6.1-sol": {
 		maxTokens: 128000,
-		contextWindow: 372000,
+		contextWindow: 500000,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
