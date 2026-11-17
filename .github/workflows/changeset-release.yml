@@ -37,8 +37,11 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "pnpm"
 
+            # Versioning only needs the Changesets CLI. Skip dependency lifecycle
+            # scripts so @vscode/ripgrep does not make a GitHub API download
+            # from this write-capable release job.
             - name: Install Dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile --ignore-scripts
 
             # Create version bump PR using changesets/action
             - name: Changeset Pull Request
