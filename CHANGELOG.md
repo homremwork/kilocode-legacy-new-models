@@ -1,5 +1,11 @@
 ## 5.17.1
 
+## 5.19.5
+
+### Patch Changes
+
+- [`2404c31`](https://github.com/Kilo-Org/kilocode-legacy/commit/2404c31bd0ff77b0b1f3111ca91a52b5455c0705) Thanks [@homremwork](https://github.com/homremwork)! - Add GPT-6.2 Sol, GPT-6.2 Astra, and GPT-6.1 Terra support to the OpenAI Codex provider.
+
 ## 5.19.4
 
 ### Patch Changes
