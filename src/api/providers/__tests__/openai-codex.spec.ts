@@ -5,6 +5,9 @@ import { OpenAiCodexHandler } from "../openai-codex"
 describe("OpenAiCodexHandler.getModel", () => {
 	it.each([
 		// kilocode_change start
+		["gpt-6.2-sol", "low"],
+		["gpt-6.2-astra", "low"],
+		["gpt-6.1-terra", "low"],
 		["gpt-6.1-sol", "low"],
 		// kilocode_change end
 		["gpt-6-astra", "low"],
@@ -29,11 +32,16 @@ describe("OpenAiCodexHandler.getModel", () => {
 	})
 
 	// kilocode_change start
-	it("should expose the GPT-6.1 Sol Codex capabilities", () => {
-		const model = new OpenAiCodexHandler({ apiModelId: "gpt-6.1-sol" }).getModel()
+	it.each([
+		["gpt-6.2-sol", 500000],
+		["gpt-6.2-astra", 372000],
+		["gpt-6.1-terra", 500000],
+		["gpt-6.1-sol", 500000],
+	])("should expose newer Codex model capabilities: %s", (apiModelId, contextWindow) => {
+		const model = new OpenAiCodexHandler({ apiModelId }).getModel()
 
-		expect(model.id).toBe("gpt-6.1-sol")
-		expect(model.info.contextWindow).toBe(500000)
+		expect(model.id).toBe(apiModelId)
+		expect(model.info.contextWindow).toBe(contextWindow)
 		expect(model.info.maxTokens).toBe(128000)
 		expect(model.info.supportsNativeTools).toBe(true)
 		expect(model.info.defaultToolProtocol).toBe("native")
