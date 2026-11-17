@@ -38,7 +38,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "pnpm"
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Configure Git
               run: |
                   git config user.name "github-actions[bot]"
@@ -142,7 +142,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "pnpm"
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Download VSIX artifact
               uses: actions/download-artifact@v7
               with:
@@ -212,7 +212,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-turbo-
             - name: Install dependencies
-              run: pnpm install
+              run: pnpm install --frozen-lockfile
             - name: Create .env file
               run: echo "KILOCODE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
             - name: Build JetBrains Plugin
