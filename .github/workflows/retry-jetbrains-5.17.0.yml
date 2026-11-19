@@ -31,7 +31,7 @@ jobs:
           check-latest: false
       - uses: gradle/actions/setup-gradle@v5
       - run: sudo apt-get update && sudo apt-get install -y libx11-dev libxkbfile-dev pkg-config build-essential python3
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: echo "KILOCODE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
       - run: pnpm run jetbrains:bundle
       - run: echo "BUNDLE_NAME=$(node jetbrains/plugin/scripts/get_bundle_name.js)" >> $GITHUB_ENV

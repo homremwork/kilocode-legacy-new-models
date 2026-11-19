@@ -63,9 +63,6 @@
 		]
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@vscode/ripgrep"
-		],
 		"overrides": {
 			"tar-fs": ">=3.1.1",
 			"esbuild": ">=0.25.0",
@@ -80,7 +77,8 @@
 			"body-parser": "^2.2.2",
 			"preact": "^10.28.2",
 			"zod": "3.25.76",
-			"@sap-ai-sdk/prompt-registry>zod": "^4.0.0"
+			"@sap-ai-sdk/prompt-registry>zod": "^4.0.0",
+			"@vscode/ripgrep": "1.18.0"
 		}
 	}
 }
