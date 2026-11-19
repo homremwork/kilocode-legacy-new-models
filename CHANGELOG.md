@@ -1,5 +1,11 @@
 ## 5.17.1
 
+## 5.19.6
+
+### Patch Changes
+
+- [`8af83d9`](https://github.com/Kilo-Org/kilocode-legacy/commit/8af83d9ed518f2433af4db76e8f6ba205147d201) Thanks [@homremwork](https://github.com/homremwork)! - Eliminate the legacy ripgrep postinstall downloader from CI by moving to @vscode/ripgrep 1.18.0 platform packages, pinning deterministic installs, and pin Windows native-module CI to the Visual Studio 2022 runner supported by the current node-gyp toolchain.
+
 ## 5.19.5
 
 ### Patch Changes
